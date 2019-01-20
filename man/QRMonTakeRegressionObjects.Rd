@@ -2,7 +2,7 @@
 % Please edit documentation in R/QRMon.R
 \name{QRMonTakeRegressionObjects}
 \alias{QRMonTakeRegressionObjects}
-\title{Take regression functions.}
+\title{Take regression objects}
 \usage{
 QRMonTakeRegressionObjects(qrObj,
   functionName = "QRMonTakeRegressionObjects")
@@ -16,11 +16,13 @@ QRMonTakeRegressionObjects(qrObj,
 A list of functions or \code{QRMonFailureSymbol}.
 }
 \description{
-Takes the regression functions from the monad object.
+Takes the regression objects from the monad object.
 }
 \seealso{
 Other Set/Take functions: \code{\link{QRMonSetData}},
   \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonTakeData}}, \code{\link{QRMonTakeValue}}
+  \code{\link{QRMonTakeData}},
+  \code{\link{QRMonTakeOutliers}},
+  \code{\link{QRMonTakeValue}}
 }
 \concept{Set/Take functions}

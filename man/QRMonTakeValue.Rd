@@ -19,6 +19,7 @@ Takes the value from QRMon monad object.
 Other Set/Take functions: \code{\link{QRMonSetData}},
   \code{\link{QRMonSetRegressionObjects}},
   \code{\link{QRMonTakeData}},
+  \code{\link{QRMonTakeOutliers}},
   \code{\link{QRMonTakeRegressionObjects}}
 }
 \concept{Set/Take functions}

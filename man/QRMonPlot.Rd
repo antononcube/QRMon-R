@@ -4,12 +4,19 @@
 \alias{QRMonPlot}
 \title{Plot with data and regression curves.}
 \usage{
-QRMonPlot(qrObj, echoQ = TRUE)
+QRMonPlot(qrObj, dataPointsColor = "gray40",
+  regressionCurvesColor = ~RegressionCurve, echoQ = TRUE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{echoQ}{To echo the plot the or not.}
+\item{dataPointsColor}{The color of the data points.
+If NULL the data points are not plotted.}
+
+\item{regressionCurvesColor}{The color of the regression curves.
+If NULL the regression curves are not plotted.}
+
+\item{echoQ}{To echo the plot the or not?}
 }
 \value{
 A QRMon object.
