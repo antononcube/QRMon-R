@@ -115,7 +115,10 @@ QRMonSetData <- function( qrObj, data ) {
       return(QRMonFailureSymbol)
     }
 
-    qrObj$EventRecords <- data[, expectedColNames]
+    qrObj$Data <- data[, expectedColNames]
+
+    qrObj$Data <- qrObj$Data[ complete.cases(qrObj$Data), ]
+
     qrObj
   }
 }
