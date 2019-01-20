@@ -9,7 +9,8 @@ output: html_notebook
 library(magrittr)
 library(ggplot2)
 library(quantreg)
-library(splines2)
+library(splines)
+library(QRMon)
 ```
 
 
@@ -22,6 +23,11 @@ source("../R/QRMon.R")
 # Data
 
 ```{r}
+data(airquality)
+summary(airquality)
+```
+
+```{r}
 library(MASS)
 data(mcycle)
 summary(mcycle)
@@ -30,8 +36,10 @@ summary(mcycle)
 # Main pipeline
 
 ```{r}
+data("airquality")
 qrmon <-
-  QRMonUnit( setNames( mcycle, c("Time", "Value") ) ) %>% 
+  QRMonUnit( setNames( airquality[, c("Day", "Ozone")], c("Time", "Value") ) ) %>%
+  #QRMonUnit( setNames( mcycle, c("Time", "Value") ) ) %>%
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
   QRMonPlot()
 ```
