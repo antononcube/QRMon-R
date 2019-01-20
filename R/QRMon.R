@@ -83,6 +83,9 @@ QRMonObject <- QRMonUnit
 #' @family Set/Take functions
 #' @export
 QRMonTakeValue <- function( qrObj ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   qrObj$Value
 }
 
@@ -96,6 +99,8 @@ QRMonTakeValue <- function( qrObj ) {
 #' @family Set/Take functions
 #' @export
 QRMonSetData <- function( qrObj, data ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   if ( is.vector(data) ) {
 
@@ -131,9 +136,13 @@ QRMonSetData <- function( qrObj, data ) {
 #' @family Set/Take functions
 #' @export
 QRMonTakeData <- function( qrObj, functionName = "QMonTakeData" ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   if( !QRMonDataCheck( qrObj, functionName = functionName,  logicalResult = TRUE) ) {
     return(QRMonFailureSymbol)
   }
+
   qrObj$Data
 }
 
@@ -149,8 +158,10 @@ QRMonTakeData <- function( qrObj, functionName = "QMonTakeData" ) {
 #' @export
 QRMonSetRegressionObjects <- function( qrObj, regressionObjects ) {
 
-  if( !is.list(regressionObjects) ) {
-    warning("The argument regressionObjects is expected to be a list of regression functions.", call. = TRUE)
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  if( !( is.null(regressionObjects) || is.list(regressionObjects) ) ) {
+    warning("The argument regressionObjects is expected to be NULL or a list of regression functions.", call. = TRUE)
     return(QRMonFailureSymbol)
   }
 
@@ -159,18 +170,41 @@ QRMonSetRegressionObjects <- function( qrObj, regressionObjects ) {
   qrObj
 }
 
-#' Take regression functions.
-#' @description Takes the regression functions from the monad object.
+#' Take regression objects
+#' @description Takes the regression objects from the monad object.
 #' @param qrObj An QRMon object.
 #' @param functionName A string that is a name of this function or a delegating function.
 #' @return A list of functions or \code{QRMonFailureSymbol}.
 #' @family Set/Take functions
 #' @export
 QRMonTakeRegressionObjects <- function( qrObj, functionName = "QRMonTakeRegressionObjects" ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   if( !QRMonDataCheck( qrObj, functionName = functionName,  logicalResult = TRUE) ) {
     return(QRMonFailureSymbol)
   }
   qrObj$RegressionObjects
+}
+
+
+##-----------------------------------------------------------
+
+#' Take outliers.
+#' @description Takes the outliers from the monad object.
+#' @param qrObj An QRMon object.
+#' @param functionName A string that is a name of this function or a delegating function.
+#' @return A list of functions or \code{QRMonFailureSymbol}.
+#' @family Set/Take functions
+#' @export
+QRMonTakeOutliers <- function( qrObj, functionName = "QRMonTakeOutliers" ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  if( !QRMonMemberPresenceCheck( qrObj, memberName = "Outliers", functionName = functionName,  logicalResult = TRUE) ) {
+    return(QRMonFailureSymbol)
+  }
+  qrObj$Outliers
 }
 
 
@@ -186,6 +220,8 @@ QRMonTakeRegressionObjects <- function( qrObj, functionName = "QRMonTakeRegressi
 #' @return If \code{logicalValue} is FALSE the result is QRMon object; if TRUE the result is logical value.
 #' @export
 QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   res <- TRUE
 
@@ -221,6 +257,8 @@ QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) 
 #' @export
 QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memberName, functionName = "", logicalResult = FALSE ) {
 
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   res <- TRUE
 
   if( nchar(functionName) > 0 ) { functionName <- paste0( functionName, ":: ") }
@@ -253,6 +291,8 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
 #' @export
 QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... ) {
 
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegression" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
@@ -283,6 +323,8 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 #' @family Regression functions
 #' @export
 QRMonPredict <- function( qrObj, newdata, ... ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPredict" )
   if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
@@ -325,13 +367,19 @@ QRMonPredict <- function( qrObj, newdata, ... ) {
 #' Plot with data and regression curves.
 #' @description Plot the monad object data and regression functions (if any.)
 #' @param qrObj An QRMon object.
-#' @param echoQ To echo the plot the or not.
+#' @param dataPointsColor The color of the data points.
+#' If NULL the data points are not plotted.
+#' @param regressionCurvesColor The color of the regression curves.
+#' If NULL the regression curves are not plotted.
+#' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The plot is made with \link{ggplot2}.
 #' The plot is assigned to \code{qrObj$Value}.
 #' @family Plots
 #' @export
-QRMonPlot <- function( qrObj, echoQ = TRUE ) {
+QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor = ~ RegressionCurve, echoQ = TRUE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   qrObj <- qrObj %>% QRMonPredict( newdata = NULL )
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
@@ -340,11 +388,25 @@ QRMonPlot <- function( qrObj, echoQ = TRUE ) {
 
   qrDF <- purrr::map_df(names(qrDF), function(x) cbind( RegressionCurve = x, qrDF[[x]], stringsAsFactors = FALSE ) )
 
-  resPlot <-
-    ggplot(qrDF) +
-    geom_point( data = qrObj %>% QRMonTakeData(),
-                mapping = aes( x = Time, y = Value ), color = 'gray40' ) +
-    geom_line( aes( x = Time, y = Value, color = RegressionCurve ) )
+  resPlot <- ggplot()
+
+  if( !is.null(dataPointsColor) ) {
+
+    resPlot <-
+      resPlot +
+      geom_point( data = qrObj %>% QRMonTakeData(),
+                  mapping = aes( x = Time, y = Value ), color = dataPointsColor )
+  }
+
+  if( !is.null(regressionCurvesColor) ) {
+    resPlot <-
+      resPlot +
+      if( is.character(regressionCurvesColor) ) {
+        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, group = ~RegressionCurve), color = regressionCurvesColor )
+      } else {
+        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, color = regressionCurvesColor ) )
+      }
+  }
 
   if( echoQ ) { print(resPlot) }
 
@@ -353,6 +415,115 @@ QRMonPlot <- function( qrObj, echoQ = TRUE ) {
   qrObj
 }
 
+##===========================================================
+## Outlier finding
+##===========================================================
+
+#' Outliers finding.
+#' @description Find the monad object data outliers using already found regression objects.
+#' @param qrObj An QRMon object.
+#' @return A QRMon object.
+#' @details The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
+#' @family Outliers
+#' @export
+QRMonOutliers <- function( qrObj ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(regObjs) ) {
+    warning( "Calculate (top and bottom) regression quantiles first.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  outliers <-
+    if( length(regObjs) == 1 && as.numeric(names(regObjs)[[1]]) < 0.5 ) {
+
+      predVals <- predict( regObjs[[1]], newdata = data[ , "Time", drop=F ] )
+      bottomOutliers <- data[ data$Value <= predVals, ]
+      list( "bottomOutliers" = bottomOutliers )
+
+    } else if ( length(regObjs) == 1 && as.numeric(names(regObjs)[[1]]) > 0.5  ) {
+
+      predVals <- predict( regObjs[[1]], newdata = data[ , "Time", drop=F ] )
+      topOutliers <- data[ data$Value >= predVals, ]
+      list( "topOutliers" = topOutliers )
+
+    } else {
+
+      qs <- as.numeric( names(regObjs) )
+      minInd <- which.min( qs )
+      maxInd <- which.max( qs )
+
+      predVals <- predict( regObjs[[minInd]], newdata = data[ , "Time", drop=F ] )
+      bottomOutliers <- data[ data$Value <= predVals, ]
+
+      predVals <- predict( regObjs[[maxInd]], newdata = data[ , "Time", drop=F ] )
+      topOutliers <- data[ data$Value >= predVals, ]
+
+      list( "bottomOutliers" = bottomOutliers, "topOutliers" = topOutliers )
+
+    }
+
+  qrObj$Value <- outliers
+  qrObj$Outliers <- outliers
+
+  qrObj
+}
+
+##===========================================================
+## Outlier plot
+##===========================================================
+
+#' Outliers plot.
+#' @description Plot the monad object data and found outliers.
+#' @param qrObj An QRMon object.
+#' @param plotRegressionCurvesQ Should the regression curves be plotted or not?
+#' @param echoQ To echo the plot the or not?
+#' @return A QRMon object.
+#' @details The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
+#' @family Outliers
+#' @export
+QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliersPlot" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  outliers <- QRMonTakeOutliers( qrObj = qrObj, functionName = "QRMonOutliersPlot" )
+  if( QRMonFailureQ(outliers) ) { return(QRMonFailureSymbol) }
+
+  #plotDataDF <- cbind( "Type" = "data", data, stringsAsFactors = FALSE )
+  plotDataDF <- NULL
+
+  if( !is.null(outliers[["bottomOutliers"]]) ) {
+   plotDataDF <- rbind( plotDataDF, cbind( "Type" = "bottomOutliers", outliers[["bottomOutliers"]], stringsAsFactors = FALSE ) )
+  }
+
+  if( !is.null(outliers[["topOutliers"]]) ) {
+    plotDataDF <- rbind( plotDataDF, cbind( "Type" = "topOutliers", outliers[["topOutliers"]], stringsAsFactors = FALSE ) )
+  }
+
+  if( plotRegressionCurvesQ ) {
+    resPlot <- qrObj %>% QRMonPlot(echoQ = FALSE, regressionCurvesColor = 'gray60' ) %>% QRMonTakeValue()
+  } else {
+    resPlot <- qrObj %>% QRMonPlot(echoQ = FALSE, regressionCurvesColor = NULL ) %>% QRMonTakeValue()
+  }
+
+  resPlot <-
+    resPlot +
+    geom_point( data = plotDataDF, mapping = aes( x = Time, y = Value, color = Type ) )
+
+  if( echoQ ) { print(resPlot) }
+
+  qrObj$Value <- resPlot
+
+  qrObj
+}
 
 ##===========================================================
 ## Simulation
@@ -373,8 +544,7 @@ RandomPoint <- function(df){
 #' @export
 QRMonSimulate <- function( qrObj, n = 100 ) {
 
-  if ( is.integer(n) ) {
-  }
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   df <- qrObj %>% QRMonTakeData()
   simPoints <- seq( min(df$Time), max(df$Time), ( max(df$Time) - min(df$Time) ) / n )
