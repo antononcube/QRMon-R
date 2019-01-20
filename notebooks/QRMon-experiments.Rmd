@@ -1,0 +1,46 @@
+---
+title: "QRMon experiments"
+author: "Anton Antonov"
+date: "1/19/2019"
+output: html_notebook
+---
+
+```{r}
+library(magrittr)
+library(ggplot2)
+library(quantreg)
+library(splines2)
+```
+
+
+```{r}
+source("../R/QRMon.R")
+```
+
+# Introduction
+
+# Data
+
+```{r}
+library(MASS)
+data(mcycle)
+summary(mcycle)
+```
+
+# Main pipeline
+
+```{r}
+qrmon <-
+  QRMonUnit( setNames( mcycle, c("Time", "Value") ) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
+  QRMonPlot()
+```
+
+# Simulate
+
+```{r}
+qrmon <- qrmon %>% QRMonSimulate(100)
+ggplot( qrmon %>% QRMonTakeValue() ) +
+  geom_point( aes( x = Time, y = Value ), color = "blue" )
+```
+

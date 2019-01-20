@@ -1,0 +1,394 @@
+##===========================================================
+## Quantile Regression workflows monad in R
+## Copyright (C) 2019  Anton Antonov
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+## Written by Anton Antonov,
+## antononcube @@@ gmail ... com,
+## Windermere, Florida, USA.
+##===========================================================
+
+
+#' @import purrr
+#' @import magrittr
+#' @import splines
+#' @import quantreg
+#' @import ggplot2
+#' @import devtools
+NULL
+
+##===========================================================
+## QRMon (Quantile Regression Monad) failure symbol
+##===========================================================
+
+#' Failure symbol for QRMon.
+#' @description Failure symbol for the monad QRMon.
+#' @export
+QRMonFailureSymbol <- NA
+
+#' Failure test for an QRMon object.
+#' @description Test is an QRMon object a failure symbol.
+#' @export
+QRMonFailureQ <- function(x) { mean(is.na(x)) }
+
+
+##===========================================================
+## FE Unit
+##===========================================================
+
+#' Make a QRMon Unit
+#' @description Creates a monad object.
+#' @param data A vector or a two-column matrix or data frame.
+#' @return An S3 class "QRMon". In other words, a list with the attribute "class" set to "QRMon".
+#' @export
+QRMonUnit <- function( data = NULL ) {
+
+  res <- list( Value = NULL, Data = data, RegressionObjects = list(), Outliers = NULL )
+  attr(res, "class") <- "QRMon"
+
+  if( !is.null(data) ) {
+    res <- QRMonSetData( res, data )
+    if( QRMonFailureQ(res) ) { return(QRMonFailureSymbol) }
+  }
+
+  res
+}
+
+#' Make a QRMon unit.
+#' @description A synonym of \code{QRMonUnit}.
+#' @export
+QRMonObject <- QRMonUnit
+
+
+##===========================================================
+## Setters and getters
+##===========================================================
+
+#' Take the value in a QRMon object.
+#' @description Takes the value from QRMon monad object.
+#' @param qrObj An QRMon object.
+#' @return Just \code{qrObj$Value}.
+#' @family Set/Take functions
+#' @export
+QRMonTakeValue <- function( qrObj ) {
+  qrObj$Value
+}
+
+##-----------------------------------------------------------
+
+#' Set event records.
+#' @description Sets an event records data frame into the monad object.
+#' @param qrObj An QRMon object.
+#' @param data A data frame with event records.
+#' @return An QRMon object.
+#' @family Set/Take functions
+#' @export
+QRMonSetData <- function( qrObj, data ) {
+
+  if ( is.vector(data) ) {
+
+    QRMonSetData( qrObj, data.frame( Time = 1:length(data), Value = data ) )
+
+  } else if ( is.matrix(data) || is.data.frame(data) ) {
+
+    expectedColNames <- c("Time", "Value")
+
+    if( ! ( is.data.frame(data) && length(intersect( colnames(data), expectedColNames)) == length(expectedColNames) ) ) {
+      warning( paste("The argument data is expected to be a data frame with columns:", paste(expectedColNames, collapse =","), "."), call. = TRUE)
+      return(QRMonFailureSymbol)
+    }
+
+    if( !is.numeric(data$Time) || !is.numeric(data$Value) ) {
+      warning( "The columns 'Time' and 'Value' of the argument data are expected to be numeric.", call. = TRUE)
+      return(QRMonFailureSymbol)
+    }
+
+    qrObj$EventRecords <- data[, expectedColNames]
+    qrObj
+  }
+}
+
+#' Take event records.
+#' @description Takes the event records data frame from the monad object.
+#' @param qrObj An QRMon object.
+#' @param functionName A string that is a name of this function or a delegating function.
+#' @return A data frame or \code{QRMonFailureSymbol}.
+#' @family Set/Take functions
+#' @export
+QRMonTakeData <- function( qrObj, functionName = "QMonTakeData" ) {
+  if( !QRMonDataCheck( qrObj, functionName = functionName,  logicalResult = TRUE) ) {
+    return(QRMonFailureSymbol)
+  }
+  qrObj$Data
+}
+
+
+##-----------------------------------------------------------
+
+#' Set regression functions.
+#' @description Sets a list of regression functions into the monad object.
+#' @param qrObj An QRMon object.
+#' @param regressionObjects A list of regression objects.
+#' @return An QRMon object.
+#' @family Set/Take functions
+#' @export
+QRMonSetRegressionObjects <- function( qrObj, regressionObjects ) {
+
+  if( !is.list(regressionObjects) ) {
+    warning("The argument regressionObjects is expected to be a list of regression functions.", call. = TRUE)
+    return(QRMonFailureSymbol)
+  }
+
+  qrObj$RegressionObjects <- regressionObjects
+
+  qrObj
+}
+
+#' Take regression functions.
+#' @description Takes the regression functions from the monad object.
+#' @param qrObj An QRMon object.
+#' @param functionName A string that is a name of this function or a delegating function.
+#' @return A list of functions or \code{QRMonFailureSymbol}.
+#' @family Set/Take functions
+#' @export
+QRMonTakeRegressionObjects <- function( qrObj, functionName = "QRMonTakeRegressionObjects" ) {
+  if( !QRMonDataCheck( qrObj, functionName = functionName,  logicalResult = TRUE) ) {
+    return(QRMonFailureSymbol)
+  }
+  qrObj$RegressionObjects
+}
+
+
+##===========================================================
+## Data presence check
+##===========================================================
+
+#' Check presence of required data.
+#' @description Checks does an QRMon object have event records, entity attributes, and computation specification.
+#' @param qrObj An QRMon object.
+#' @param functionName A name of the delegating function (if any).
+#' @param logicalResult Should the result be logical value?
+#' @return If \code{logicalValue} is FALSE the result is QRMon object; if TRUE the result is logical value.
+#' @export
+QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) {
+
+  res <- TRUE
+
+  if( is.null(functionName) || nchar(functionName) == 0 ) {
+    functionName <- ""
+  } else {
+    functionName <- paste0( functionName, ":: ")
+  }
+
+  if( is.null(qrObj$Data) ) {
+    warning( paste0( functionName, "Cannot find event data"), call. = TRUE)
+    res <- FALSE
+  }
+
+  if( logicalResult ) { res }
+  else if ( !logicalResult && !res) { QRMonFailureSymbol }
+  else { qrObj }
+}
+
+
+##===========================================================
+## Member presense check
+##===========================================================
+
+#' General member presence check.
+#' @description A general function for checking the presence of a data member in an QRMon object.
+#' @param qrObj An QRMon object.
+#' @param memberName The name of the member to be checked.
+#' @param memberPrettyName A pretty member name (for messages).
+#' @param functionName The name of the delegating function.
+#' @param logicalResult Should the result be logical value?
+#' @return A logical value or an QRMon object.
+#' @export
+QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memberName, functionName = "", logicalResult = FALSE ) {
+
+  res <- TRUE
+
+  if( nchar(functionName) > 0 ) { functionName <- paste0( functionName, ":: ") }
+
+  if( is.null(qrObj[[memberName]]) ) {
+    warning( paste0( functionName, paste0("Cannot find ", memberPrettyName, "."), call. = TRUE) )
+    res <- FALSE
+  }
+
+  if( logicalResult ) { res }
+  else if ( !logicalResult && !res) { QRMonFailureSymbol }
+  else { qrObj }
+}
+
+
+##===========================================================
+## Quantile regression fit
+##===========================================================
+
+#' Quantile regression fit≈.
+#' @description Finds the quantile regression objects for the specified quantiles
+#' using a B-spline basis.
+#' @param qrObj An QRMon object.
+#' @param quantiles A numeric vector with quantiles.
+#' @param ... parameters for \code{\link{quantreg::rq}}.
+#' @return A QRMon object.
+#' @details The obtained regression objects are assigned/appended to the
+#' \code{qrObj$RegressionObjects}.
+#' @family Regression functions
+#' @export
+QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... ) {
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegression" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  rqFits <-
+    purrr::map(
+      quantiles,
+      function(tau) { rq(Value ~ bs(Time, ...), tau = tau, data = data ) })
+  names(rqFits) <- quantiles
+
+  qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
+
+  qrObj
+}
+
+##===========================================================
+## Predict (evaluate) with regression objects
+##===========================================================
+
+#' Prediction with regression objects.
+#' @description Predict values with the monad object regression objects
+#' over specified new data.
+#' @param qrObj An QRMon object.
+#' @param newdata A numeric vector, a data frame with a column 'Time', or NULL.
+#' @param ... parameters for \code{\link{quantreg::predict.rq}}.
+#' @return A QRMon object.
+#' @details The result of the evaluation of the regression objects
+#' over the new data is a list that is assigned to \code{qrObj$Value}.
+#' @family Regression functions
+#' @export
+QRMonPredict <- function( qrObj, newdata, ... ) {
+
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPredict" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+
+  if( is.vector(newdata) ) {
+    newdata <- data.frame( Time = newdata )
+  }
+
+  if( ! ( is.null(newdata) || is.data.frame(newdata) && sum( "Time" %in% colnames(newdata) ) == 1 ) ) {
+    warning( "A numeric vector, data frame with a column 'Time', or NULL is expected for the argument newdata.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( is.null(newdata) ) {
+    newdata <- QRMonTakeData(qrObj = qrObj)
+  }
+
+  if( is.data.frame(newdata) ) {
+    newdata <- newdata[, "Time", drop = F]
+  }
+
+  qrRes <-
+    purrr::map(
+      names(regObjs),
+      function(x) {
+        res <- predict( regObjs[[x]], newdata = newdata, ... )
+        data.frame( Time = newdata, Value = res )
+      })
+  names(qrRes) <- names(regObjs)
+
+  qrObj$Value <- qrRes
+
+  qrObj
+}
+
+##===========================================================
+## Plot regression functions
+##===========================================================
+
+#' Plot with data and regression curves.
+#' @description Plot the monad object data and regression functions (if any.)
+#' @param qrObj An QRMon object.
+#' @param echoQ To echo the plot the or not.
+#' @return A QRMon object.
+#' @details The plot is made with \link{ggplot2}.
+#' The plot is assigned to \code{qrObj$Value}.
+#' @family Plots
+#' @export
+QRMonPlot <- function( qrObj, echoQ = TRUE ) {
+
+  qrObj <- qrObj %>% QRMonPredict( newdata = NULL )
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  qrDF <- qrObj %>% QRMonTakeValue()
+
+  qrDF <- purrr::map_df(names(qrDF), function(x) cbind( RegressionCurve = x, qrDF[[x]], stringsAsFactors = FALSE ) )
+
+  resPlot <-
+    ggplot(qrDF) +
+    geom_point( data = qrObj %>% QRMonTakeData(),
+                mapping = aes( x = Time, y = Value ), color = 'gray40' ) +
+    geom_line( aes( x = Time, y = Value, color = RegressionCurve ) )
+
+  if( echoQ ) { print(resPlot) }
+
+  qrObj$Value <- resPlot
+
+  qrObj
+}
+
+
+##===========================================================
+## Simulation
+##===========================================================
+
+RandomPoint <- function(df){
+  df <- df[ order(df$RegressionCurve), ]
+  ind <- sample.int( nrow(df) - 1, 1 )
+  runif( min = df$Value[ind], max = df$Value[ind+1], n = 1 )
+}
+
+#' Simulate data points.
+#' @description Simulate data points based on regression quantiles.
+#' @param qrObj An QRMon object.
+#' @param n Number of simulated points.
+#' @return A QRMon object.
+#' @details The data frame with the simulated points are assigned to \code{qrObj$Value}.
+#' @export
+QRMonSimulate <- function( qrObj, n = 100 ) {
+
+  if ( is.integer(n) ) {
+  }
+
+  df <- qrObj %>% QRMonTakeData()
+  simPoints <- seq( min(df$Time), max(df$Time), ( max(df$Time) - min(df$Time) ) / n )
+
+  qrObj <- qrObj %>% QRMonPredict( simPoints )
+  simVals <- qrObj %>% QRMonTakeValue()
+
+  simDF <-
+    purrr::map_df( names(simVals),
+                   function(x) cbind( RegressionCurve = as.numeric(x), simVals[[x]], stringsAsFactors = FALSE ) )
+
+  simResDF <-
+    simDF %>%
+    dplyr::group_by( Time ) %>%
+    dplyr::do( data.frame( Value = RandomPoint(.) ))
+
+  qrObj$Value <- simResDF
+
+  qrObj
+}
