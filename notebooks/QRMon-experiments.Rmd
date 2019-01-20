@@ -36,12 +36,24 @@ summary(mcycle)
 
 # Main pipeline
 
+## MASS dataset
+
+```{r}
+qrmon <-
+  QRMonUnit( mcycle) %>%
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
+  QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
+```
+
+
+## Airquality dataset 
+
 ```{r}
 data("airquality")
 qrmon <-
-  QRMonUnit( setNames( airquality[, c("Day", "Ozone")], c("Time", "Value") ) ) %>%
+  QRMonUnit( airquality[, c("Day", "Ozone")] ) %>%
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
-  QRMonPlot( dataPointsColor = NULL, regressionCurvesColor = ~ RegressionCurve )
+  QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
 ```
 # Outliers
 

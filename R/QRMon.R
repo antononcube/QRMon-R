@@ -106,13 +106,20 @@ QRMonSetData <- function( qrObj, data ) {
 
     QRMonSetData( qrObj, data.frame( Time = 1:length(data), Value = data ) )
 
+  } else if ( ( is.matrix(data) || is.data.frame(data) ) && ncol(data) == 1 ) {
+
+    QRMonSetData( qrObj, data.frame( Time = 1:nrow(data), Value = data[,1] ) )
+
   } else if ( is.matrix(data) || is.data.frame(data) ) {
 
     expectedColNames <- c("Time", "Value")
 
     if( ! ( is.data.frame(data) && length(intersect( colnames(data), expectedColNames)) == length(expectedColNames) ) ) {
-      warning( paste("The argument data is expected to be a data frame with columns:", paste(expectedColNames, collapse =","), "."), call. = TRUE)
-      return(QRMonFailureSymbol)
+      warning( paste( "The argument data is expected to be a data frame with columns: {", paste(expectedColNames, collapse =", "), "}."), call. = TRUE)
+      warning( paste0( "Proceeding by renaming the first columm \"", colnames(data)[[1]], "\" as \"Time\" ",
+                       "and renaming the second columm \"", colnames(data)[[2]], "\" as \"Value\"." ), call. = TRUE )
+      data <- data[,1:2]
+      colnames(data) <- c( "Time", "Value" )
     }
 
     if( !is.numeric(data$Time) || !is.numeric(data$Value) ) {
