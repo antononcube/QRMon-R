@@ -10,7 +10,8 @@ library(magrittr)
 library(ggplot2)
 library(quantreg)
 library(splines)
-library(QRMon)
+#library(QRMon)
+devtools::load_all()
 ```
 
 
@@ -39,9 +40,18 @@ summary(mcycle)
 data("airquality")
 qrmon <-
   QRMonUnit( setNames( airquality[, c("Day", "Ozone")], c("Time", "Value") ) ) %>%
-  #QRMonUnit( setNames( mcycle, c("Time", "Value") ) ) %>%
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
-  QRMonPlot()
+  QRMonPlot( dataPointsColor = NULL, regressionCurvesColor = ~ RegressionCurve )
+```
+# Outliers
+
+```{r}
+qrmon <-
+  qrmon %>% 
+  QRMonSetRegressionObjects(NULL) %>% 
+  QRMonQuantileRegression( df = 12, quantiles = c(0.05, 0.95) ) %>% 
+  QRMonOutliers() %>% 
+  QRMonOutliersPlot( plotRegressionCurvesQ = TRUE )
 ```
 
 # Simulate
