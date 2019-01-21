@@ -314,6 +314,7 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
   qrObj
 }
 
+
 ##===========================================================
 ## Predict (evaluate) with regression objects
 ##===========================================================
@@ -366,6 +367,7 @@ QRMonPredict <- function( qrObj, newdata, ... ) {
 
   qrObj
 }
+
 
 ##===========================================================
 ## Plot regression functions
@@ -421,6 +423,7 @@ QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor 
 
   qrObj
 }
+
 
 ##===========================================================
 ## Outlier finding
@@ -481,6 +484,7 @@ QRMonOutliers <- function( qrObj ) {
   qrObj
 }
 
+
 ##===========================================================
 ## Outlier plot
 ##===========================================================
@@ -531,6 +535,100 @@ QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE
 
   qrObj
 }
+
+
+##===========================================================
+## Errors
+##===========================================================
+
+#' Fit errors.
+#' @description Find the fit errors of the monad object data and found regression objects.
+#' @param qrObj An QRMon object.
+#' @param relativeErrorsQ Should relative errors be computed?
+#' @return A QRMon object.
+#' @details The errors are assigned to \code{qrObj$Value}.
+#' @family Errors
+#' @export
+QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
+  
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+  
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  res <- 
+    purrr::map( names(regObjs), 
+                   function(x) { 
+                     errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
+                     
+                     if( relativeErrorsQ ) {
+                       errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
+                     }
+                     
+                     errs
+                   })  
+  names(res) <- names(regObjs)
+  
+  qrObj$Value <- res
+  
+  qrObj
+}
+
+
+##===========================================================
+## Errors plot
+##===========================================================
+
+#' Fit errors plot.
+#' @description Find and plot the fit errors of the monad object data and found regression objects.
+#' @param qrObj An QRMon object.
+#' @param relativeErrorsQ Should relative errors be computed?
+#' @param echoQ To echo the plot the or not?
+#' @return A QRMon object.
+#' @details The errors plot are assigned to \code{qrObj$Value}.
+#' @family Errors
+#' @export
+QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
+  
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+  
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+  
+  res <- 
+    purrr::map_df( names(regObjs), 
+                   function(x) { 
+                     errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
+                  
+                     if( relativeErrorsQ ) {
+                       errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
+                     }
+                     
+                     data.frame( RegressionCurve = x,
+                                 Time = data[, "Time", drop = T],
+                                 Error = errs,
+                                 stringsAsFactors = F) 
+                   })
+  
+  resPlot <-
+    ggplot(res) +
+    geom_point( aes( x = Time, y = Error, color = RegressionCurve ) )
+    
+  qrObj$Value <- resPlot
+  
+  if( echoQ ) {
+    print(resPlot)
+  }
+  
+  qrObj
+}
+
 
 ##===========================================================
 ## Simulation
