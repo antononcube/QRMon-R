@@ -88,7 +88,7 @@ res <-
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = 0.5 ) %>% 
   QRMonQuantileRegression( df = 3, degree = 2, quantiles = 0.55 ) %>% 
   QRMonPlot() %>% 
-  QRMonErrors() %>% 
+  QRMonErrorsPlot() %>% 
   QRMonTakeValue()
 ```
 

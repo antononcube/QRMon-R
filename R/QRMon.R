@@ -550,30 +550,30 @@ QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE
 #' @family Errors
 #' @export
 QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
-  
+
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
-  
+
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
   if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
-  
+
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
-  res <- 
-    purrr::map( names(regObjs), 
-                   function(x) { 
+  res <-
+    purrr::map( names(regObjs),
+                   function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
-                     
+
                      if( relativeErrorsQ ) {
                        errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
                      }
-                     
+
                      errs
-                   })  
+                   })
   names(res) <- names(regObjs)
-  
+
   qrObj$Value <- res
-  
+
   qrObj
 }
 
@@ -592,40 +592,42 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
 #' @family Errors
 #' @export
 QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
-  
+
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
-  
+
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
   if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
-  
+
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
-  
-  res <- 
-    purrr::map_df( names(regObjs), 
-                   function(x) { 
+
+  res <-
+    purrr::map_df( names(regObjs),
+                   function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
-                  
+
                      if( relativeErrorsQ ) {
                        errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
                      }
-                     
+
                      data.frame( RegressionCurve = x,
                                  Time = data[, "Time", drop = T],
                                  Error = errs,
-                                 stringsAsFactors = F) 
+                                 stringsAsFactors = F)
                    })
-  
+
   resPlot <-
     ggplot(res) +
-    geom_point( aes( x = Time, y = Error, color = RegressionCurve ) )
-    
+    geom_point( aes( x = Time, y = Error, color = RegressionCurve ) ) +
+    geom_segment( aes(x = Time, xend = Time, y = 0, yend = Error, color = RegressionCurve ) ) +
+    facet_wrap( ~RegressionCurve )
+
   qrObj$Value <- resPlot
-  
+
   if( echoQ ) {
     print(resPlot)
   }
-  
+
   qrObj
 }
 
