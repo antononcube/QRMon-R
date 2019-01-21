@@ -25,6 +25,7 @@ The result of the evaluation of the regression objects
 over the new data is a list that is assigned to \code{qrObj$Value}.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonQuantileRegression}}
+Other Regression functions: \code{\link{QRMonPickPathPoints}},
+  \code{\link{QRMonQuantileRegression}}
 }
 \concept{Regression functions}

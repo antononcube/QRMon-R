@@ -25,6 +25,7 @@ The obtained regression objects are assigned/appended to the
 \code{qrObj$RegressionObjects}.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPredict}}
+Other Regression functions: \code{\link{QRMonPickPathPoints}},
+  \code{\link{QRMonPredict}}
 }
 \concept{Regression functions}

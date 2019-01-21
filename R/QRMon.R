@@ -633,6 +633,55 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
 
 
 ##===========================================================
+## Pick path points
+##===========================================================
+
+#' Pick path points.
+#' @description Pick points close to the regression functions using a specified threshold.
+#' @param qrObj An QRMon object.
+#' @param threshold The pick threshold.
+#' @param pickAboveThresholdQ Should points be picked below or above the threshold?
+#' @return A QRMon object.
+#' @details The list of data frames is assigned to \code{qrObj$Value}.
+#' @family Regression functions
+#' @export
+QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPickPathPoints" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonPickPathPoints" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  if( ! ( is.numeric(threshold) && threshold >= 0) ) {
+    warning( "The argument threshold is expected to be a non-negative number.", call. = TRUE )
+    return( QRMonFailureSymbol )
+  }
+
+  qrObj <- QRMonPredict( qrObj, newdata = NULL )
+
+  qrVals <- qrObj %>% QRMonPredict( newdata = NULL ) %>%  QRMonTakeValue()
+  if( QRMonFailureQ(qrVals) ) { return(QRMonFailureSymbol) }
+
+  res <-
+    purrr::map(
+      qrVals,
+      function(x) {
+        picks <- abs( x[,"Value"] - data[, "Value"] ) <= threshold
+        if( pickAboveThresholdQ ) { picks <- ! picks }
+        data[ picks, ]
+      })
+  names(res) <- names(qrVals)
+
+  qrObj$Value <- res
+
+  qrObj
+}
+
+
+##===========================================================
 ## Simulation
 ##===========================================================
 

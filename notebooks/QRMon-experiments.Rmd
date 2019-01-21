@@ -92,6 +92,23 @@ res <-
   QRMonTakeValue()
 ```
 
+# Pick points
+
+```{r}
+qrmon <-
+  QRMonUnit( mcycle) %>%
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = 0.5 ) %>% 
+  QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve ) %>% 
+  QRMonErrorsPlot() %>% 
+  QRMonPickPathPoints( threshold = 10, pickAboveThresholdQ = FALSE )
+```
+
+```{r}
+ggplot( (qrmon %>% QRMonTakeValue())[[1]] ) +
+  geom_point( aes( x = Time, y = Value ) )
+```
+
+
 
 # Simulate
 
