@@ -45,7 +45,7 @@ QRMonFailureQ <- function(x) { mean(is.na(x)) }
 
 
 ##===========================================================
-## FE Unit
+## QRMon Unit
 ##===========================================================
 
 #' Make a QRMon Unit
@@ -250,7 +250,7 @@ QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) 
 
 
 ##===========================================================
-## Member presense check
+## Member presence check
 ##===========================================================
 
 #' General member presence check.
@@ -282,10 +282,55 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
 
 
 ##===========================================================
+## Echo function appliction of over monad's value
+##===========================================================
+
+#' Function application to monad's value.
+#' @description Apply a function to the "Value" element/member of the monad object.
+#' @param qrObj An QRMon object.
+#' @param f A function to be applied to \code(qrObj$Value).
+#' @return A QRMon object.
+#' @details Prints \code{f(qrObj$Value)}.
+#' @export
+QRMonEchoFunctionValue <- function( qrObj, f ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  print( f(qrObj$Value) )
+
+  qrObj
+}
+
+
+##===========================================================
+## Data summary
+##===========================================================
+
+#' Data summary.
+#' @description Summarize data.
+#' using a B-spline basis.
+#' @param qrObj An QRMon object.
+#' @return A QRMon object.
+#' @details Prints data dimensions and summary.
+#' @export
+QRMonEchoDataSummary <- function( qrObj ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonEchoDataSummary" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  print( list( Dimensions = dim(data), Summary = summary(data) ) )
+
+  qrObj
+}
+
+
+##===========================================================
 ## Quantile regression fit
 ##===========================================================
 
-#' Quantile regression fit≈.
+#' Quantile regression fit.
 #' @description Finds the quantile regression objects for the specified quantiles
 #' using a B-spline basis.
 #' @param qrObj An QRMon object.
@@ -486,7 +531,7 @@ QRMonOutliers <- function( qrObj ) {
 
 
 ##===========================================================
-## Outlier plot
+## Outliers plot
 ##===========================================================
 
 #' Outliers plot.
@@ -568,7 +613,7 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
                        errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
                      }
 
-                     errs
+                     data.frame( Time = data[, "Time"], Error = errs )
                    })
   names(res) <- names(regObjs)
 

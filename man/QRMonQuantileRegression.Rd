@@ -2,7 +2,7 @@
 % Please edit documentation in R/QRMon.R
 \name{QRMonQuantileRegression}
 \alias{QRMonQuantileRegression}
-\title{Quantile regression fit≈.}
+\title{Quantile regression fit.}
 \usage{
 QRMonQuantileRegression(qrObj, quantiles = c(0.25, 0.5, 0.75), ...)
 }

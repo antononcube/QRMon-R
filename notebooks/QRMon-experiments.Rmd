@@ -61,7 +61,7 @@ qrmon <-
 qrmon <-
   qrmon %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 12, quantiles = c(0.05, 0.95) ) %>% 
+  QRMonQuantileRegression( df = 9, quantiles = c(0.05,0.95) ) %>% 
   QRMonOutliers() %>% 
   QRMonOutliersPlot( plotRegressionCurvesQ = TRUE )
 ```
@@ -98,7 +98,7 @@ res <-
 qrmon <-
   QRMonUnit( mcycle) %>%
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = 0.5 ) %>% 
-  QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve ) %>% 
+  QRMonPlot( dataPointsColor = "gray50", regressionCurvesColor = ~ RegressionCurve ) %>% 
   QRMonErrorsPlot() %>% 
   QRMonPickPathPoints( threshold = 10, pickAboveThresholdQ = FALSE )
 ```
@@ -113,7 +113,16 @@ ggplot( (qrmon %>% QRMonTakeValue())[[1]] ) +
 # Simulate
 
 ```{r}
-qrmon <- qrmon %>% QRMonSimulate(100)
+qrmon <-
+  QRMonUnit( mcycle ) %>% 
+  QRMonEchoDataSummary() %>% 
+  QRMonSetRegressionObjects(NULL) %>% 
+  QRMonQuantileRegression( df = 9, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
+  QRMonPlot()
+```
+
+```{r}
+qrmon <- qrmon %>% QRMonSimulate(200)
 ggplot( qrmon %>% QRMonTakeValue() ) +
   geom_point( aes( x = Time, y = Value ), color = "blue" )
 ```
