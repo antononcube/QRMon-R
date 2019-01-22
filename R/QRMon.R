@@ -288,7 +288,7 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
 #' Function application to monad's value.
 #' @description Apply a function to the "Value" element/member of the monad object.
 #' @param qrObj An QRMon object.
-#' @param f A function to be applied to \code(qrObj$Value).
+#' @param f A function to be applied to \code{qrObj$Value}.
 #' @return A QRMon object.
 #' @details Prints \code{f(qrObj$Value)}.
 #' @export

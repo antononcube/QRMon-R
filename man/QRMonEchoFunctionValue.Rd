@@ -9,7 +9,7 @@ QRMonEchoFunctionValue(qrObj, f)
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{f}{A function to be applied to \code(qrObj$Value).}
+\item{f}{A function to be applied to \code{qrObj$Value}.}
 }
 \value{
 A QRMon object.
