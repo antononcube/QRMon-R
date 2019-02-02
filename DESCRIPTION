@@ -2,7 +2,8 @@ Package: QRMon
 Type: Package
 Title: Quantile Regression Monad
 Version: 0.6.0
-Author@R: person("Anton", "Antonov", email = "antononcube@gmail.com", role = c("aut","cre"))
+Authors@R: person("Anton", "Antonov", email = "antononcube@gmail.com",
+                  role = c("aut", "cre"))
 Maintainer: Anton Antonov <antononcube@gmail.com>
 Description: This package implements in R a software monad for Quantile Regression workflows.
 License: GPL-3
