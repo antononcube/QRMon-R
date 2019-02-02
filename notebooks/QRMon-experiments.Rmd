@@ -14,11 +14,6 @@ library(splines)
 devtools::load_all()
 ```
 
-
-```{r}
-source("../R/QRMon.R")
-```
-
 # Introduction
 
 # Data
@@ -36,11 +31,28 @@ summary(mcycle)
 
 # Main pipeline
 
-## MASS dataset
+## Orlando temperature data
 
 ```{r}
 qrmon <-
-  QRMonUnit( mcycle) %>%
+  QRMonUnit( dfTemperatureData ) %>%
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = 1:9/10 ) %>% 
+  QRMonPlot( dataPointsColor = "gray50", regressionCurvesColor = ~ RegressionCurve )
+```
+
+```{r}
+qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
+```
+
+
+## MASS dataset
+
+(Using this dataset here because it is used in [the vignette](https://cran.r-project.org/web/packages/quantreg/vignettes/rq.pdf) 
+of the package ["quantreg"](https://cran.r-project.org/web/packages/quantreg/index.html).)
+
+```{r}
+qrmon <-
+  QRMonUnit( mcycle ) %>%
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
   QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
 ```
@@ -51,29 +63,14 @@ qrmon <-
 qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
 ```
 
-## Airquality dataset 
-
-```{r}
-data("airquality")
-qrmon <-
-  QRMonUnit( airquality[, c("Day", "Ozone")] ) %>%
-  QRMonQuantileRegression( df = 12, degree = 2, quantiles = seq(0.2,0.8,0.2) ) %>% 
-  QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
-```
-
-## Fractions
-
-```{r}
-qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
-```
 
 # Outliers
 
 ```{r}
 qrmon <-
-  qrmon %>% 
+  QRMonUnit( dfTemperatureData ) %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 9, quantiles = c(0.05,0.95) ) %>% 
+  QRMonQuantileRegression( df = 16, quantiles = c(0.02,0.98) ) %>% 
   QRMonOutliers() %>% 
   QRMonOutliersPlot( plotRegressionCurvesQ = TRUE )
 ```
@@ -126,16 +123,20 @@ ggplot( (qrmon %>% QRMonTakeValue())[[1]] ) +
 
 ```{r}
 qrmon <-
-  QRMonUnit( mcycle ) %>% 
+  QRMonUnit( dfTemperatureData ) %>% 
   QRMonEchoDataSummary() %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 9, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
+  QRMonQuantileRegression( df = 12, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
   QRMonPlot()
 ```
 
 ```{r}
-qrmon <- qrmon %>% QRMonSimulate(200)
-ggplot( qrmon %>% QRMonTakeValue() ) +
-  geom_point( aes( x = Time, y = Value ), color = "blue" )
+qrmon <- qrmon %>% QRMonSimulate(1000)
+qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
+              cbind( Type = "Simulated", as.data.frame( qrmon %>% QRMonTakeValue() )))
+ggplot( qDF ) +
+  geom_line( aes( x = Time, y = Value ), color = "gray60" ) +
+  facet_wrap( ~Type, ncol=1)
+#  geom_point( aes( x = Time, y = Value ), color = "blue" )
 ```
 
