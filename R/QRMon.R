@@ -849,7 +849,9 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
 #' @family Regression functions
 #' @export
 QRMonSeparateToFractions <- function( qrObj, data = NULL, cumulativeQ = TRUE ) {
-  QRMonSeparate(qrObj = qrObj, data = data, cumulativeQ = cumulativeQ, fractionsQ = TRUE)
+  qrObj <- QRMonSeparate(qrObj = qrObj, data = data, cumulativeQ = cumulativeQ, fractionsQ = TRUE)
+  qrObj$Value <- setNames( as.numeric(qrObj$Value), names(qrObj$Value) )
+  qrObj
 }
 
 
