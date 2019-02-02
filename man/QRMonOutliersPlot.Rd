@@ -23,6 +23,6 @@ Plot the monad object data and found outliers.
 The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
 }
 \seealso{
-Other Outliers: \code{\link{QRMonOutliers}}
+Other Outlier functions: \code{\link{QRMonOutliers}}
 }
-\concept{Outliers}
+\concept{Outlier functions}

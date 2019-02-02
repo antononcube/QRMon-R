@@ -28,4 +28,4 @@ Plot the monad object data and regression functions (if any.)
 The plot is made with \link{ggplot2}.
 The plot is assigned to \code{qrObj$Value}.
 }
-\concept{Plots}
+\concept{Plot functions}

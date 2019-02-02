@@ -24,6 +24,8 @@ The list of data frames is assigned to \code{qrObj$Value}.
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegression}}
+  \code{\link{QRMonQuantileRegression}},
+  \code{\link{QRMonSeparateToFractions}},
+  \code{\link{QRMonSeparate}}
 }
 \concept{Regression functions}

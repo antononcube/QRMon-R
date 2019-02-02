@@ -76,6 +76,22 @@ QRMonObject <- QRMonUnit
 ## Setters and getters
 ##===========================================================
 
+#' Set the value in a QRMon object.
+#' @description Sets the value in a QRMon monad object.
+#' @param qrObj An QRMon object.
+#' @param value The new value.
+#' @return A QRMon object.
+#' @details Assigns \code{value} to \code{qrObj$Value}.
+#' @family Set/Take functions
+#' @export
+QRMonSetValue <- function( qrObj, value ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  qrObj$Value <- value
+  qrObj
+}
+
 #' Take the value in a QRMon object.
 #' @description Takes the value from QRMon monad object.
 #' @param qrObj An QRMon object.
@@ -429,7 +445,7 @@ QRMonPredict <- function( qrObj, newdata, ... ) {
 #' @return A QRMon object.
 #' @details The plot is made with \link{ggplot2}.
 #' The plot is assigned to \code{qrObj$Value}.
-#' @family Plots
+#' @family Plot functions
 #' @export
 QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor = ~ RegressionCurve, echoQ = TRUE ) {
 
@@ -479,7 +495,7 @@ QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor 
 #' @param qrObj An QRMon object.
 #' @return A QRMon object.
 #' @details The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
-#' @family Outliers
+#' @family Outlier functions
 #' @export
 QRMonOutliers <- function( qrObj ) {
 
@@ -541,7 +557,7 @@ QRMonOutliers <- function( qrObj ) {
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
-#' @family Outliers
+#' @family Outlier functions
 #' @export
 QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE ) {
 
@@ -705,8 +721,7 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
     return( QRMonFailureSymbol )
   }
 
-  qrObj <- QRMonPredict( qrObj, newdata = NULL )
-
+  ## Find the regression quantile values for each quantile.
   qrVals <- qrObj %>% QRMonPredict( newdata = NULL ) %>%  QRMonTakeValue()
   if( QRMonFailureQ(qrVals) ) { return(QRMonFailureSymbol) }
 
@@ -723,6 +738,118 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
   qrObj$Value <- res
 
   qrObj
+}
+
+
+
+##===========================================================
+## Separate
+##===========================================================
+
+#' Separate data points.
+#' @description Separates the argument by the regression functions in the context.
+#' If no argument is given the data in the monad object is separated.
+#' @param qrObj An QRMon object.
+#' @param data A data frame of points to be separated.
+#' @param cumulativeQ Should for each regression quantile find the points below it?
+#' @param fractionsQ Should fractions instead of points be returned?
+#' @return A QRMon object.
+#' @details The result of the separation is a list of data frames assigned to \code{qrObj$Value}.
+#' Each data frame of that list corresponds to the found regression quantiles.
+#' If the data frame argument \code{data} has columns "Time" and "Value" those columns are used;
+#' otherwise the first and second columns are treated as "Time" and "Value" respectively.
+#' @family Regression functions
+#' @export
+QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = FALSE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonSeparate" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+
+  if( ! ( is.null(data) || is.data.frame(data) && ncol(data) >= 2 ) ) {
+    warning( "The argument data is expected to be NULL or a data frame of points (with two numeric columns.)", call. = TRUE )
+    return( QRMonFailureSymbol )
+  }
+
+  if( is.null(data) ) {
+
+    data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonPickPathPoints" )
+    if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  } else {
+
+    dataColNames <- c( "Time", "Value")
+    if( colnames(data) %in% dataColNames ) {
+      data <- data[, dataColNames]
+    } else {
+      data <- setName( data[, 1:2], dataColNames )
+    }
+
+  }
+
+  ## Find the regression quantile values for each quantile.
+  qrVals <- qrObj %>% QRMonPredict( newdata = data ) %>%  QRMonTakeValue()
+  if( QRMonFailureQ(qrVals) ) { return(QRMonFailureSymbol) }
+
+  ## The computation can be optimized.
+  ## Currently is O[ Length[data] * Length[regressionFunctions] ] . Can be at least halved.
+
+  indGroups <- purrr::map( qrVals, function(x) { x[,"Value"] >= data[, "Value"] } )
+  names(indGroups) <- names(qrVals)
+
+  if( cumulativeQ ) {
+
+    pointGroups <- purrr::map( indGroups, function(x) data[x,] )
+    names(pointGroups) <- names(indGroups)
+
+  } else {
+    ## Find complements of the indices that belong to pairs of consecutive quantiles.
+
+    indGroups <- qs[order(as.numeric(indGroups))]
+
+    if( length(indGroups) > 1 ) {
+      indGroups2 <- purrr::pmap( list( indGroups[-1], indGroups[-length(indGroups)] ), function(x,y) setdiff(y,x) )
+      indGroups <- setNames( c( indGroups[1], indGroups2 ), names(indGroups) )
+    }
+
+    pointGroups <- purrr::map( indGroups, function(x) data[x,] )
+    names(pointGroups) <- names(indGroups)
+  }
+
+  if( fractionsQ ) {
+    ## Note that here we change the result shape into a list of point counts.
+    ## There is specialized QRMon signature (QRMonSeparateToFractions) in order to obtain this kind of result.
+    ## It is much easier to compute this here than in that function.
+    pointGroups <- purrr::map( pointGroups, function(x) nrow(x) / nrow(data) )
+    names(pointGroups) <- names(indGroups)
+  }
+
+  qrObj <- QRMonSetValue(qrObj, pointGroups)
+  qrObj
+}
+
+
+##===========================================================
+## Separate to fractions
+##===========================================================
+
+#' Fractions of separated data points.
+#' @description Separates the argument by the regression functions in the context
+#' and compute the corresponding fractions.
+#' If no argument is given the data in the monad object is separated.
+#' @param qrObj An QRMon object.
+#' @param data A data frame of points to be separated.
+#' @param cumulativeQ Should for each regression quantile find the points below it?
+#' @param fractionsQ Should fractions instead of points be returned?
+#' @return A QRMon object.
+#' @details The result is assigned to \code{qrObj$Value}.
+#' For more details see \code{\link{QRMonSeparate}}.
+#' (This function is just a shortcut to that one.)
+#' @family Regression functions
+#' @export
+QRMonSeparateToFractions <- function( qrObj, data = NULL, cumulativeQ = TRUE ) {
+  QRMonSeparate(qrObj = qrObj, data = data, cumulativeQ = cumulativeQ, fractionsQ = TRUE)
 }
 
 

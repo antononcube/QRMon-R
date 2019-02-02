@@ -26,6 +26,8 @@ over the new data is a list that is assigned to \code{qrObj$Value}.
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonQuantileRegression}}
+  \code{\link{QRMonQuantileRegression}},
+  \code{\link{QRMonSeparateToFractions}},
+  \code{\link{QRMonSeparate}}
 }
 \concept{Regression functions}

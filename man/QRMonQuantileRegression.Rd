@@ -26,6 +26,8 @@ The obtained regression objects are assigned/appended to the
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonPredict}}
+  \code{\link{QRMonPredict}},
+  \code{\link{QRMonSeparateToFractions}},
+  \code{\link{QRMonSeparate}}
 }
 \concept{Regression functions}

@@ -19,7 +19,7 @@ Sets a list of regression functions into the monad object.
 }
 \seealso{
 Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonTakeData}},
+  \code{\link{QRMonSetValue}}, \code{\link{QRMonTakeData}},
   \code{\link{QRMonTakeOutliers}},
   \code{\link{QRMonTakeRegressionObjects}},
   \code{\link{QRMonTakeValue}}

@@ -45,6 +45,11 @@ qrmon <-
   QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
 ```
 
+## Fractions
+
+```{r}
+qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
+```
 
 ## Airquality dataset 
 
@@ -52,9 +57,16 @@ qrmon <-
 data("airquality")
 qrmon <-
   QRMonUnit( airquality[, c("Day", "Ozone")] ) %>%
-  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 2, quantiles = seq(0.2,0.8,0.2) ) %>% 
   QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
 ```
+
+## Fractions
+
+```{r}
+qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
+```
+
 # Outliers
 
 ```{r}
