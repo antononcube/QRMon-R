@@ -1,0 +1,63 @@
+---
+title: "Generate data"
+author: "Anton Antonov"
+date: 2019-02-02
+output: html_notebook
+---
+
+# Distribution data
+
+The following data is generated to have [heteroscedasticity](https://en.wikipedia.org/wiki/Heteroscedasticity).
+
+```{r}
+xs <- seq(-3, 3, 0.01)
+dfDistributionData <- purrr::map_df( xs, function(x) { data.frame( X = x, Y = exp(-x^2) + rnorm( n = 1, mean = 0, sd =  0.15 * sqrt( abs( 1.5 - x) / 1.5 ) ) ) })
+dim(dfDistributionData)
+```
+
+```{r}
+ggplot(dfDistributionData) + geom_point(aes(x = X, y = Y ))
+```
+
+```{r, eval=F}
+usethis::use_data( dfDistributionData )
+```
+
+# Weather data
+
+```{Mathematica, eval=F}
+tsData = WeatherData[{"Orlando", "USA"}, "Temperature", {{2015, 1, 1}, {2019, 1, 1}, "Day"}]
+tsData2 = QRMonUnit[tsData] ⟹ QRMonTakeData[]
+Export["~/QRMon-R/data/tsData.csv", Prepend[tsData2, {"Time", "Temperature"}]]
+```
+
+```{r, eval=F}
+dfTemperatureData <- read.csv( "~/QRMon-R/data/tsData.csv")
+head(dfTemperatureData)
+```
+
+```{r, eval=F}
+usethis::use_data( dfTemperatureData )
+```
+
+
+# Financial data
+
+```{r, eval=F}
+library(quantmod)
+finData <- getSymbols("GE", from = "2014-01-01", to = "2019-01-01", auto.assign = FALSE)
+```
+
+```{r,eval=F}
+dfFinancialData <- as.data.frame(finData)
+dfFinancialData <- data.frame( Time = as.Date(rownames(dfFinancialData)), Value = dfFinancialData$GE.Adjusted )
+```
+
+```{r,eval=F}
+ggplot(dfFinancialData) + geom_line( aes( x = Time, y = Value ))
+```
+
+```{r, eval=F}
+usethis::use_data( dfFinancialData )
+```
+
