@@ -6,10 +6,14 @@ The R-implementation follows the Mathematica QRMon package ["MonadicQuantileRegr
 The Mathematica QRMon package is extensively documented with 
 ["A monad for Quantile Regression workflows"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MarkdownDocuments/A-monad-for-Quantile-Regression-workflows.md).
 
+Here is how to install the package:
+
+    devtools::install_github("antononcube/QRMon-R")
+
 Here is an example:
 
-    data("airquality")
     qrmon <-
-      QRMonUnit( setNames( airquality[, c("Day", "Ozone")], c("Time", "Value") ) ) %>%
-      QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
-      QRMonPlot()
+      QRMonUnit( dfTemperatureData ) %>%
+      QRMonEchoDataSummary() %>%
+      QRMonQuantileRegression( df = 16, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>%
+      QRMonPlot( dataPointsColor = "gray60", datePlotQ = TRUE, dateOrigin = "1900-01-01" )
