@@ -566,12 +566,16 @@ QRMonOutliers <- function( qrObj ) {
 #' @description Plot the monad object data and found outliers.
 #' @param qrObj An QRMon object.
 #' @param plotRegressionCurvesQ Should the regression curves be plotted or not?
+#' @param datePlotQ Should the time axis have dates scale?
+#' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
 #' @family Outlier functions
 #' @export
-QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE ) {
+QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE,
+                               datePlotQ = FALSE, dateOrigin = "1970-01-01",
+                               echoQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -593,9 +597,19 @@ QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE
   }
 
   if( plotRegressionCurvesQ ) {
-    resPlot <- qrObj %>% QRMonPlot(echoQ = FALSE, regressionCurvesColor = 'gray60' ) %>% QRMonTakeValue()
+    resPlot <-
+      qrObj %>%
+      QRMonPlot( regressionCurvesColor = 'gray60', datePlotQ = datePlotQ, dateOrigin = dateOrigin, echoQ = FALSE ) %>%
+      QRMonTakeValue()
   } else {
-    resPlot <- qrObj %>% QRMonPlot(echoQ = FALSE, regressionCurvesColor = NULL ) %>% QRMonTakeValue()
+    resPlot <-
+      qrObj %>%
+      QRMonPlot( regressionCurvesColor = NULL, datePlotQ = datePlotQ, dateOrigin = dateOrigin, echoQ = FALSE ) %>%
+      QRMonTakeValue()
+  }
+
+  if( datePlotQ ) {
+    plotDataDF$Time <- as.POSIXct( plotDataDF$Time, origin = dateOrigin )
   }
 
   resPlot <-

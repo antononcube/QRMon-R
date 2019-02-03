@@ -4,12 +4,17 @@
 \alias{QRMonOutliersPlot}
 \title{Outliers plot.}
 \usage{
-QRMonOutliersPlot(qrObj, plotRegressionCurvesQ = TRUE, echoQ = TRUE)
+QRMonOutliersPlot(qrObj, plotRegressionCurvesQ = TRUE,
+  datePlotQ = FALSE, dateOrigin = "1970-01-01", echoQ = TRUE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
 \item{plotRegressionCurvesQ}{Should the regression curves be plotted or not?}
+
+\item{datePlotQ}{Should the time axis have dates scale?}
+
+\item{dateOrigin}{Same as the argument \code{origin} of \code{as.POSIXct}.}
 
 \item{echoQ}{To echo the plot the or not?}
 }

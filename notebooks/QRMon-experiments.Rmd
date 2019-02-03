@@ -126,8 +126,8 @@ qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonEchoDataSummary() %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 12, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
-  QRMonPlot()
+  QRMonQuantileRegression( df = 16, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
+  QRMonPlot(dataPointsColor = "gray70")
 ```
 
 ```{r}
@@ -135,8 +135,8 @@ qrmon <- qrmon %>% QRMonSimulate(1000)
 qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
               cbind( Type = "Simulated", as.data.frame( qrmon %>% QRMonTakeValue() )))
 ggplot( qDF ) +
-  geom_line( aes( x = Time, y = Value ), color = "gray60" ) +
+  geom_line( aes( x = Time, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
-#  geom_point( aes( x = Time, y = Value ), color = "blue" )
+```
 ```
 
