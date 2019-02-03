@@ -25,12 +25,14 @@ devtools::load_all()
 In this document we describe the design and implementation of a (software programming) monad for 
 [Quantile Regression](https://en.wikipedia.org/wiki/Quantile_regression) 
 workflows specification and execution. 
-The implementation is done in R with package [`QRMon`](https://github.com/antononcube/QRMon-R).
+The implementation is done in R with package [`QRMon`](https://github.com/antononcube/QRMon-R), 
+[[AAp1](https://github.com/antononcube/QRMon-R)].
 
-*Remarks:*
+**Remarks:**
 
 - The design and implementation shown below follow closely the Mathematica / Wolfram Language (WL) implementation
-["MonadicQuantileRegression.m"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m).
+["MonadicQuantileRegression.m"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m), 
+[[AAp2](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m)].
 
 - This document heavily borrows sections, explanations, and references from the document ["A monad for Quantile Regression workflows"](https://mathematicaforprediction.wordpress.com/2018/08/01/a-monad-for-quantile-regression-workflows/)), 
 [[AA6](https://mathematicaforprediction.wordpress.com/2018/08/01/a-monad-for-quantile-regression-workflows/)].
@@ -40,14 +42,14 @@ an independent variable value and a dependent variable value.
 We want to find a curve that is a function of the independent variable that splits the points in such a way 
 that, say, 30% of the points are above that curve. 
 This is done with [Quantile Regression](https://en.wikipedia.org/wiki/Quantile_regression), 
-see [[Wk2](https://en.wikipedia.org/wiki/Quantile_regression), [CN1](http://www.econ.uiuc.edu/~roger/research/rq/QReco.pdf),
+see [[Wk2](https://en.wikipedia.org/wiki/Quantile_regression), RK2, [CN1](http://www.econ.uiuc.edu/~roger/research/rq/QReco.pdf),
 [AA2](https://mathematicaforprediction.wordpress.com/2013/12/16/quantile-regression-through-linear-programming/), 
 [AA3](https://mathematicaforprediction.wordpress.com/2014/01/01/quantile-regression-with-b-splines/)]. 
 Quantile Regression is a method to estimate the variable relations for all parts of the distribution. 
 (Not just, say, the mean of the relationships found with Least Squares Regression.)
 
 The goal of the monad design is to make the specification of Quantile Regression workflows (relatively) easy, straightforward, by following a certain main scenario and specifying variations over that scenario. Since Quantile Regression is often compared with Least Squares Regression and some type of filtering (like, Moving Average) those functionalities should be included in the monad design scenarios. 
-*(Currently Least Squares Regression and moving averages are not implemented in the R package but they are implemented in the Mathematica one.)*
+*(Currently Least Squares Regression and moving averages are not implemented in the R package; they are implemented in the Mathematica one, [AAp2].)*
 
 The monad is named QRMon and it utilizes (it is based on) the package [`magrittr`](https://magrittr.tidyverse.org) 
 and the Quantile Regression package [`quantreg`](https://cran.r-project.org/web/packages/quantreg/index.html), [[RKp1](https://cran.r-project.org/web/packages/quantreg/index.html), [RK1](https://cran.r-project.org/web/packages/quantreg/vignettes/rq.pdf)].
@@ -178,16 +180,19 @@ The formulation of the problem hints to an (almost) straightforward implementati
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 16, quantiles = c(0.01, 1:7/8, 0.99) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = c(0.01, 1:9/10, 0.99) ) %>% 
   QRMonPlot(dataPointsColor = "gray70", datePlotQ = TRUE, dateOrigin = "1900-01-01")
 ```
 
 Plot original and simulated data:
 
-```{r, fig.width=7}
-qrmon <- qrmon %>% QRMonSimulate(1000)
+```{r, fig.width=7, fig.height=6}
+set.seed(2223)
 qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
-              cbind( Type = "Simulated", as.data.frame( qrmon %>% QRMonTakeValue() )))
+              cbind( Type = "Simulated.1", as.data.frame( qrmon %>% QRMonSimulate(1000) %>% QRMonTakeValue() )),
+              cbind( Type = "Simulated.2", as.data.frame( qrmon %>% QRMonSimulate(1000) %>% QRMonTakeValue() )),
+              cbind( Type = "Simulated.3", as.data.frame( qrmon %>% QRMonSimulate(1000) %>% QRMonTakeValue() ))
+              )
 ggplot( qDF ) +
   geom_line( aes( x = Time, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
@@ -196,9 +201,19 @@ ggplot( qDF ) +
 
 ## References
 
+###  Packages
+
+[AAp1] Anton Antonov, [Quantile Regression workflows monad in R](https://github.com/antononcube/QRMon-R), (2018), 
+[QRMon-R at GitHub](https://github.com/antononcube/QRMon-R).
+
+[AAp2] Anton Antonov, [Monadic Quantile Regression Mathematica package](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m), (2018), 
+[MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction).
+
+[RKp1] Roger Koenker et al., ["quantreg: Quantile Regression"](https://cran.r-project.org/web/packages/quantreg/index.html), (2018).
+
 ### MathematicaForPrediction articles
 
-[AA1] Anton Antonov, ["Monad code generation and extension"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MarkdownDocuments/Monad-code-generation-and-extension.md), (2017),  [MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction)*, *[https://github.com/antononcube/MathematicaForPrediction](https://github.com/antononcube/MathematicaForPrediction).
+[AA1] Anton Antonov, ["Monad code generation and extension"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MarkdownDocuments/Monad-code-generation-and-extension.md), (2017),  [MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction).
 
 [AA2] Anton Antonov, ["Quantile regression through linear programming"](https://mathematicaforprediction.wordpress.com/2013/12/16/quantile-regression-through-linear-programming/), (2013), [MathematicaForPrediction at WordPress](https://mathematicaforprediction.wordpress.com).
 
@@ -219,8 +234,6 @@ ggplot( qDF ) +
 [Wk3] Wikipedia entry, [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials)/
 
 [CN1] Brian S. Code and Barry R. Noon, ["A gentle introduction to quantile regression for ecologists"](http://www.econ.uiuc.edu/~roger/research/rq/QReco.pdf), (2003). Frontiers in Ecology and the Environment. 1 (8): 412-420. doi:10.2307/3868138.
-
-[RKp1] Roger Koenker et al., ["quantreg: Quantile Regression"](https://cran.r-project.org/web/packages/quantreg/index.html), (2018).
 
 [RK1] Roger Koenker, ["Quantile Regression in R: a vignette"](https://cran.r-project.org/web/packages/quantreg/vignettes/rq.pdf), (2018).
 
