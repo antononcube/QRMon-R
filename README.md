@@ -1,6 +1,7 @@
 # Quantile Regression workflows monad in R 
 
-This repository is for the R implementation of **Q**uantile **R**egression **Mon**ad (QRMon).
+This repository is for the R implementation of a software monad for Quantile Regression
+workflows called **Q**uantile **R**egression **Mon**ad (QRMon).
 
 The R-implementation follows the Mathematica QRMon package ["MonadicQuantileRegression.m"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m).
 The Mathematica QRMon package is extensively documented with 
@@ -16,4 +17,4 @@ Here is an example:
       QRMonUnit( dfTemperatureData ) %>%
       QRMonEchoDataSummary() %>%
       QRMonQuantileRegression( df = 16, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>%
-      QRMonPlot( dataPointsColor = "gray60", datePlotQ = TRUE, dateOrigin = "1900-01-01" )
+      QRMonPlot( datePlotQ = TRUE, dateOrigin = "1900-01-01" )
