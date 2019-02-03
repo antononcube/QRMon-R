@@ -4,8 +4,9 @@
 \alias{QRMonPlot}
 \title{Plot with data and regression curves.}
 \usage{
-QRMonPlot(qrObj, dataPointsColor = "gray40",
-  regressionCurvesColor = ~RegressionCurve, echoQ = TRUE)
+QRMonPlot(qrObj, dataPointsColor = "gray60",
+  regressionCurvesColor = ~RegressionCurve, datePlotQ = FALSE,
+  dateOrigin = "1970-01-01", echoQ = TRUE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -15,6 +16,10 @@ If NULL the data points are not plotted.}
 
 \item{regressionCurvesColor}{The color of the regression curves.
 If NULL the regression curves are not plotted.}
+
+\item{datePlotQ}{Should the time axis have dates scale?}
+
+\item{dateOrigin}{Same as the argument \code{origin} of \code{as.POSIXct}.}
 
 \item{echoQ}{To echo the plot the or not?}
 }

@@ -441,13 +441,18 @@ QRMonPredict <- function( qrObj, newdata, ... ) {
 #' If NULL the data points are not plotted.
 #' @param regressionCurvesColor The color of the regression curves.
 #' If NULL the regression curves are not plotted.
+#' @param datePlotQ Should the time axis have dates scale?
+#' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The plot is made with \link{ggplot2}.
 #' The plot is assigned to \code{qrObj$Value}.
 #' @family Plot functions
 #' @export
-QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor = ~ RegressionCurve, echoQ = TRUE ) {
+QRMonPlot <- function( qrObj,
+                       dataPointsColor = 'gray60', regressionCurvesColor = ~ RegressionCurve,
+                       datePlotQ = FALSE, dateOrigin = "1970-01-01",
+                       echoQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -460,11 +465,18 @@ QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor 
 
   resPlot <- ggplot()
 
+  data <- qrObj %>% QRMonTakeData()
+
+  if( datePlotQ ) {
+    data$Time <- as.POSIXct( data$Time, origin = dateOrigin )
+    qrDF$Time <- as.POSIXct( qrDF$Time, origin = dateOrigin )
+  }
+
   if( !is.null(dataPointsColor) ) {
 
     resPlot <-
       resPlot +
-      geom_point( data = qrObj %>% QRMonTakeData(),
+      geom_point( data = data,
                   mapping = aes( x = Time, y = Value ), color = dataPointsColor )
   }
 
@@ -472,7 +484,7 @@ QRMonPlot <- function( qrObj, dataPointsColor = 'gray40', regressionCurvesColor 
     resPlot <-
       resPlot +
       if( is.character(regressionCurvesColor) ) {
-        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, group = ~RegressionCurve), color = regressionCurvesColor )
+        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, group = ~RegressionCurve ), color = regressionCurvesColor )
       } else {
         geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, color = regressionCurvesColor ) )
       }
