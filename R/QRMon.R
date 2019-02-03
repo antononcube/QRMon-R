@@ -138,6 +138,11 @@ QRMonSetData <- function( qrObj, data ) {
       colnames(data) <- c( "Time", "Value" )
     }
 
+    if( sum( class(data$Time) %in% c( "Date", "POSSIXt" ) ) > 0 ) {
+      warning( "Converting dates into seconds.", call. = TRUE)
+      data$Time <- as.numeric(data$Time, "second")
+    }
+
     if( !is.numeric(data$Time) || !is.numeric(data$Value) ) {
       warning( "The columns 'Time' and 'Value' of the argument data are expected to be numeric.", call. = TRUE)
       return(QRMonFailureSymbol)
