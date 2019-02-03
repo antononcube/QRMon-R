@@ -18,3 +18,6 @@ Here is an example:
       QRMonEchoDataSummary() %>%
       QRMonQuantileRegression( df = 16, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>%
       QRMonPlot( datePlotQ = TRUE, dateOrigin = "1900-01-01" )
+      
+For detailed explanations see the vignette 
+["Rapid making of Quantile Regression workflows"](https://htmlpreview.github.io/?https://github.com/antononcube/QRMon-R/blob/master/notebooks/rapid-making-of-qr-workflows.html).
