@@ -126,7 +126,7 @@ qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonEchoDataSummary() %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 16, quantiles = c(0.01, 1:7/8, 0.98) ) %>% 
+  QRMonQuantileRegression( df = 16, quantiles = c(0.01, 1:7/8, 0.99) ) %>% 
   QRMonPlot(dataPointsColor = "gray70")
 ```
 
