@@ -63,8 +63,41 @@ qrmon <-
 qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
 ```
 
+# Conditional CDF's
+
+```{r}
+qrmon <-
+  QRMonUnit( dfDistributionData ) %>% 
+  QRMonQuantileRegression( df = 6, degree = 3, quantiles = 1:9/10 ) %>% 
+  QRMonPlot()
+```
+
+```{r}
+resCDFs <-
+  qrmon %>% 
+  QRMonConditionalCDF( timePoints = c(-2,0) ) %>% 
+  QRMonTakeValue()
+```
+
+```{r}
+plotDF <- 
+  purrr::map_df( names(resCDFs), 
+                 function(timePoint) {
+                   xs <- qrmon %>% QRMonPredict( newdata = as.numeric(timePoint) ) %>% QRMonTakeValue()
+                   xs <- purrr::map_dbl(xs, function(x) x$Value)
+                   cbind( Time = timePoint, purrr::map_df( xs, function(x) data.frame( Value = x, CDF = resCDFs[[timePoint]](x) ) ) )
+                 } )
+```
+
+```{r}
+ggplot(plotDF) +
+  geom_line( aes(x = Value, y = CDF) ) +
+  facet_wrap( ~Time, scales = "free")
+```
+
 
 # Outliers
+
 
 ```{r}
 qrmon <-

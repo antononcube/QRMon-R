@@ -393,7 +393,9 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 #' @param ... parameters for \code{\link{quantreg::predict.rq}}.
 #' @return A QRMon object.
 #' @details The result of the evaluation of the regression objects
-#' over the new data is a list that is assigned to \code{qrObj$Value}.
+#' over the new data is a list of data frame. List's names are the quantiles
+#' that correspond to the regression objects.
+#' The list is assigned to \code{qrObj$Value}.
 #' @family Regression functions
 #' @export
 QRMonPredict <- function( qrObj, newdata, ... ) {
@@ -687,10 +689,10 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonErrorsPlot" )
   if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
-  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonErrorsPlot" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
   res <-
@@ -720,6 +722,60 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
     print(resPlot)
   }
 
+  qrObj
+}
+
+
+##===========================================================
+## Conditional distribution
+##===========================================================
+
+#' @param qs Quantiles.
+#' @param qvals Quantile values.
+CDFEstimateFunction <- function( qs, qvals ) {
+  ## splinefun( x = qvals, y = qs, method = "natural" )
+  approxfun( x = qvals, y = qs, method = "linear" )
+}
+
+#' @param qs Quantiles.
+#' @param qvals Quantile values.
+PDFEstimateFunction <- function( qs, qvals ) {
+  names(qvals) <- NULL; names(qs) <- NULL
+  xs = ( qvals[-length(qvals)] + qvals[-1] ) / 2
+  ys = diff(qs) / diff(qvals)
+  approxfun( x = xs, y = ys, method = "constant" )  
+}
+
+#' Conditional CDF computation.
+#' @description Computes conditional CDF's for given time points.
+#' @param qrObj An QRMon object.
+#' @param timePoints Time points to compute CDF's upon.
+#' @return A QRMon object.
+#' @details The computations result is assigned to \code{qrObj$Value}.
+#' @export
+QRMonConditionalCDF <- function( qrObj, timePoints ) {
+  
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+  
+  regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonConditionalCDF" )
+  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  
+  if( !is.numeric(timePoints) ) {
+    warning( "The argument timePoints is expected to be a numeric vector.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  qvals <- qrObj %>% QRMonPredict( newdata = timePoints ) %>% QRMonTakeValue()
+  qvals <- purrr::map_df( names(qvals), function(x) cbind( Quantile = x, qvals[[x]] ))
+  qvals$Quantile <- as.numeric( qvals$Quantile )
+    
+  
+  res <- 
+    purrr::map( split(qvals, qvals$Time), function(x) {
+       CDFEstimateFunction( qs = x$Quantile, qvals = x$Value )
+    } )
+  
+  qrObj$Value <- res
   qrObj
 }
 
