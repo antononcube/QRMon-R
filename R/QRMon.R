@@ -292,7 +292,7 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
   if( nchar(functionName) > 0 ) { functionName <- paste0( functionName, ":: ") }
 
   if( is.null(qrObj[[memberName]]) ) {
-    warning( paste0( functionName, paste0("Cannot find ", memberPrettyName, "."), call. = TRUE) )
+    warning( paste0( functionName, paste0("Cannot find ", memberPrettyName, ".") ), call. = TRUE )
     res <- FALSE
   }
 
@@ -403,7 +403,10 @@ QRMonPredict <- function( qrObj, newdata, ... ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPredict" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { 
+    warning( "Calculate regression quantiles first.", call. = TRUE )
+    return(QRMonFailureSymbol) 
+  }
 
   if( is.vector(newdata) ) {
     newdata <- data.frame( Time = newdata )
@@ -521,7 +524,7 @@ QRMonOutliers <- function( qrObj ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
-  if( QRMonFailureQ(regObjs) ) {
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) {
     warning( "Calculate (top and bottom) regression quantiles first.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
@@ -648,7 +651,7 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonOutliers" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonOutliers" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
@@ -690,7 +693,7 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonErrorsPlot" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonErrorsPlot" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
@@ -758,7 +761,7 @@ QRMonConditionalCDF <- function( qrObj, timePoints ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
   
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonConditionalCDF" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
   
   if( !is.numeric(timePoints) ) {
     warning( "The argument timePoints is expected to be a numeric vector.", call. = TRUE )
@@ -798,7 +801,7 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPickPathPoints" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonPickPathPoints" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
@@ -852,7 +855,7 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonSeparate" )
-  if( QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
   if( ! ( is.null(data) || is.data.frame(data) && ncol(data) >= 2 ) ) {
     warning( "The argument data is expected to be NULL or a data frame of points (with two numeric columns.)", call. = TRUE )
