@@ -831,7 +831,6 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
 }
 
 
-
 ##===========================================================
 ## Separate
 ##===========================================================
@@ -967,7 +966,7 @@ QRMonSimulate <- function( qrObj, n = 100 ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   df <- qrObj %>% QRMonTakeData()
-  simPoints <- seq( min(df$Time), max(df$Time), ( max(df$Time) - min(df$Time) ) / n )
+  simPoints <- seq( min(df$Time), max(df$Time), ( max(df$Time) - min(df$Time) ) / (n-1) )
 
   qrObj <- qrObj %>% QRMonPredict( simPoints )
   simVals <- qrObj %>% QRMonTakeValue()
