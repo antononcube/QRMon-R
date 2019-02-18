@@ -13,8 +13,7 @@ QRMonEchoDataSummary(qrObj)
 A QRMon object.
 }
 \description{
-Summarize data.
-using a B-spline basis.
+Summarize data and print the summary.
 }
 \details{
 Prints data dimensions and summary.

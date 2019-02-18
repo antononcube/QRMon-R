@@ -260,7 +260,7 @@ QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) 
   }
 
   if( is.null(qrObj$Data) ) {
-    warning( paste0( functionName, "Cannot find event data"), call. = TRUE)
+    warning( paste0( functionName, "Cannot find data"), call. = TRUE)
     res <- FALSE
   }
 
@@ -328,8 +328,7 @@ QRMonEchoFunctionValue <- function( qrObj, f ) {
 ##===========================================================
 
 #' Data summary.
-#' @description Summarize data.
-#' using a B-spline basis.
+#' @description Summarize data and print the summary.
 #' @param qrObj An QRMon object.
 #' @return A QRMon object.
 #' @details Prints data dimensions and summary.
