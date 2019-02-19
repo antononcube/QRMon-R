@@ -397,14 +397,14 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 #' The list is assigned to \code{qrObj$Value}.
 #' @family Regression functions
 #' @export
-QRMonPredict <- function( qrObj, newdata, ... ) {
+QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonPredict" )
-  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { 
+  if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) {
     warning( "Calculate regression quantiles first.", call. = TRUE )
-    return(QRMonFailureSymbol) 
+    return(QRMonFailureSymbol)
   }
 
   if( is.vector(newdata) ) {
@@ -745,7 +745,7 @@ PDFEstimateFunction <- function( qs, qvals ) {
   names(qvals) <- NULL; names(qs) <- NULL
   xs = ( qvals[-length(qvals)] + qvals[-1] ) / 2
   ys = diff(qs) / diff(qvals)
-  approxfun( x = xs, y = ys, method = "constant" )  
+  approxfun( x = xs, y = ys, method = "constant" )
 }
 
 #' Conditional CDF computation.
@@ -756,12 +756,12 @@ PDFEstimateFunction <- function( qs, qvals ) {
 #' @details The computations result is assigned to \code{qrObj$Value}.
 #' @export
 QRMonConditionalCDF <- function( qrObj, timePoints ) {
-  
+
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
-  
+
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonConditionalCDF" )
   if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
-  
+
   if( !is.numeric(timePoints) ) {
     warning( "The argument timePoints is expected to be a numeric vector.", call. = TRUE )
     return(QRMonFailureSymbol)
@@ -770,13 +770,13 @@ QRMonConditionalCDF <- function( qrObj, timePoints ) {
   qvals <- qrObj %>% QRMonPredict( newdata = timePoints ) %>% QRMonTakeValue()
   qvals <- purrr::map_df( names(qvals), function(x) cbind( Quantile = x, qvals[[x]] ))
   qvals$Quantile <- as.numeric( qvals$Quantile )
-    
-  
-  res <- 
+
+
+  res <-
     purrr::map( split(qvals, qvals$Time), function(x) {
        CDFEstimateFunction( qs = x$Quantile, qvals = x$Value )
     } )
-  
+
   qrObj$Value <- res
   qrObj
 }
