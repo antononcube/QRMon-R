@@ -1,0 +1,79 @@
+---
+title: "Random pipelines"
+author: "Anton Antonov"
+date: "2019-02018"
+output: html_notebook
+---
+
+```{r, include=FALSE}
+devtools::load_all()
+library(magrittr)
+```
+
+# Introduction
+
+This notebook can be used to create a (large) number of random `QRMon` pipelines, summarize the results pipelines' evaluations,
+and if needed examine 'failing' pipelines for debugging purposes.
+
+# Random pipelines making
+
+```{r}
+set.seed(5427)
+numberOfPipelines <- 120
+```
+
+```{r}
+pipelineLevels <-
+  list( level1 = c( "QRMonUnit()", 
+                    "QRMonUnit( dfDistributionData )",
+                    "QRMonUnit( dfFinancialData )",
+                    "QRMonUnit( dfTemperatureData )" ),
+        level2 = c( "QRMonQuantileRegression( df = 6, degree = 7, quantiles = 0.5)",
+                    "QRMonQuantileRegression( df = 12, quantiles = c(0.1,0.9))",
+                    "QRMonQuantileRegression( df = 12, quantiles = 1:5/6)"),
+        level3 = c( "QRMonPredict()",
+                    "QRMonErrors()",
+                    "QRMonOutliers()",
+                    "QRMonPickPathPoints(0.2)", 
+                    "QRMonConditionalCDF( 0 )" )
+  )
+```
+
+```{r}
+randomPipelines <- 
+  purrr::map( 1:numberOfPipelines, 
+              function(x) { 
+                rp <- Reduce( function(a,x) { c( a, sample(x,1) )}, init = c(), x = pipelineLevels ) 
+                parse( text = paste( rp, collapse = " %>% " ))
+              })
+```
+
+```{r}
+system.time(
+  qrMonRes <- purrr::map( randomPipelines, purrr::safely(eval))
+)
+```
+
+```{r}
+checkRes <- purrr::map_lgl( qrMonRes, function(x) is.na(x$result) || is.list(x$result) && class(x$result) == "QRMon" )
+```
+
+```{r}
+summary(checkRes)
+```
+```{r}
+mean(is.na(purrr::map( qrMonRes, "result")))
+```
+
+# Debug
+
+
+```{r}
+pos <- which( checkRes %in% c(NA) )
+pos
+```
+
+```{r}
+randomPipelines[pos]
+```
+
