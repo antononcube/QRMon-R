@@ -1,21 +1,21 @@
 context("Expected quantile fractions")
-#library(QRMon)
-devtools::load_all()
+library(QRMon)
+
 
 ## In some sense these test prove that the
 ## Quantile Regression implementation is corect
 ## together with the separation implementation.
 
 qFracs0 <-
-  QRMonUnit( dfTemperatureData ) %>% 
-  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>% 
-  QRMonSeparateToFractions() %>% 
+  QRMonUnit( dfTemperatureData ) %>%
+  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>%
+  QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 qFracs1 <-
-  QRMonUnit( dfDistributionData ) %>% 
-  QRMonQuantileRegression( df = 6, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>% 
-  QRMonSeparateToFractions() %>% 
+  QRMonUnit( dfDistributionData ) %>%
+  QRMonQuantileRegression( df = 6, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>%
+  QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 test_that("Correct fractions for temperature data", {

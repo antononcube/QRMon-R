@@ -1,6 +1,5 @@
 context("Messages and warnings")
-#library(QRMon)
-devtools::load_all()
+library(QRMon)
 
 test_that("Lift to monad messages", {
   expect_warning( QRMonUnit( dfTemperatureData ), "The argument data.*" )
@@ -8,16 +7,16 @@ test_that("Lift to monad messages", {
 })
 
 test_that("Quantile regresssion warnings", {
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>% 
-                    QRMonPlot(), 
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
+                    QRMonPlot(),
                   "Calculate regression quantiles first.*" )
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>% 
-                    QRMonOutliers(), 
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
+                    QRMonOutliers(),
                   "Calculate .* regression quantiles first.*" )
 })
 
 test_that("Monad elements warnings", {
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>% 
-                    QRMonOutliersPlot(), 
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
+                    QRMonOutliersPlot(),
                   "Cannot find Outliers.")
 })
