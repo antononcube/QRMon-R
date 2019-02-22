@@ -32,6 +32,7 @@ otherwise the first and second columns are treated as "Time" and "Value" respect
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},
   \code{\link{QRMonPredict}},
+  \code{\link{QRMonQuantileRegressionFit}},
   \code{\link{QRMonQuantileRegression}},
   \code{\link{QRMonSeparateToFractions}}
 }

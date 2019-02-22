@@ -31,6 +31,7 @@ For more details see \code{\link{QRMonSeparate}}.
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},
   \code{\link{QRMonPredict}},
+  \code{\link{QRMonQuantileRegressionFit}},
   \code{\link{QRMonQuantileRegression}},
   \code{\link{QRMonSeparate}}
 }

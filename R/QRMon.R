@@ -387,18 +387,19 @@ QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
 
 
 ##===========================================================
-## Quantile regression fit
+## Quantile regression
 ##===========================================================
 
-#' Quantile regression fit.
+#' Quantile regression B-splines basis fit.
 #' @description Finds the quantile regression objects for the specified quantiles
 #' using a B-spline basis.
 #' @param qrObj An QRMon object.
 #' @param quantiles A numeric vector with quantiles.
-#' @param ... parameters for \code{\link{quantreg::rq}}.
+#' @param ... parameters for \code{\link{splines::bs}}.
 #' @return A QRMon object.
 #' @details The obtained regression objects are assigned/appended to the
 #' \code{qrObj$RegressionObjects}.
+#' For more computational details see \code{\link{quantreg::rq}}.
 #' @family Regression functions
 #' @export
 QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... ) {
@@ -412,6 +413,74 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
     purrr::map(
       quantiles,
       function(tau) { rq(Value ~ bs(Time, ...), tau = tau, data = data ) })
+  names(rqFits) <- quantiles
+
+  qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
+
+  qrObj
+}
+
+
+##===========================================================
+## Quantile regression fit
+##===========================================================
+
+ListOfFunctionsQ <- function(fb) {
+  is.list(fb) && mean(purrr::map_lgl(funcBasis, function(x) class(x) == "function")) == 1
+}
+
+#' Quantile regression function basis fit.
+#' @description Finds the quantile regression objects for the specified quantiles
+#' using a specified function basis.
+#' @param qrObj An QRMon object.
+#' @param functionBasis A list of basis functions or
+#' a basis matrix computed over the data abscissas.
+#' @param quantiles A numeric vector with quantiles.
+#' @return A QRMon object.
+#' @details
+#' When the argument \code{functionBasis} is a (basis) matrix it is expected
+#' to be evaluated over the data abscissas (\code{qrObj$Data$Time}).
+#' The obtained regression objects are assigned/appended to the
+#' \code{qrObj$RegressionObjects}.
+#' For more computational details see \code{\link{quantreg::rq}}.
+#' @family Regression functions
+#' @export
+QRMonQuantileRegressionFit <- function( qrObj, functionBasis, quantiles = c(0.25, 0.5, 0.75) ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegressionFit" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  if( is.matrix(functionBasis) ) {
+
+    if( nrow(functionBasis) != nrow(data) ) {
+      warning( "When the argument functionBasis is a (basis) matrix it is expected to be to have number of rows that equals the data points.", call. = TRUE)
+      return(QRMonFailureSymbol)
+    }
+
+    fbModelMat <- functionBasis
+
+  } else if ( ListOfFunctionsQ(functionBasis) ) {
+
+    fbModelMat <-
+      purrr::map_dfc( functionBasis, function(bf) {
+        purrr::map_dbl( data$Time, function(x) bf(x) )
+      })
+
+    fbModelMat <- as.matrix(fbModelMat)
+
+  } else {
+
+    warning( "The argument functionBasis is expected to be a list of basis functions or a basis matrix.", call. = TRUE)
+    return(QRMonFailureSymbol)
+
+  }
+
+  rqFits <-
+    purrr::map(
+      quantiles,
+      function(tau) { rq(Value ~ fbModelMat, tau = tau, data = data ) })
   names(rqFits) <- quantiles
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )

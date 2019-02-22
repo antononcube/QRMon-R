@@ -28,6 +28,7 @@ The list is assigned to \code{qrObj$Value}.
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},
+  \code{\link{QRMonQuantileRegressionFit}},
   \code{\link{QRMonQuantileRegression}},
   \code{\link{QRMonSeparateToFractions}},
   \code{\link{QRMonSeparate}}
