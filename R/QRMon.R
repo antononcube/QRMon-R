@@ -426,20 +426,31 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 ##===========================================================
 
 ListOfFunctionsQ <- function(fb) {
-  is.list(fb) && mean(purrr::map_lgl(funcBasis, function(x) class(x) == "function")) == 1
+  is.list(fb) && mean(purrr::map_lgl(fb, function(x) class(x) == "function")) == 1
+}
+
+ListOfFormulasQ <- function(fb) {
+  is.list(fb) && mean(purrr::map_lgl(fb, function(x) class(x) == "formula")) == 1
+}
+
+FromFormulasToModelFrame <- function( fms, data ) {
+  modelDF <- purrr::map_dfc( fms, function(f) model.frame( formula = f, data = data)[,2])
+  setNames(modelDF, purrr::map(fms, function(f) attributes(terms(f))$term.labels ) )
 }
 
 #' Quantile regression function basis fit.
 #' @description Finds the quantile regression objects for the specified quantiles
 #' using a specified function basis.
 #' @param qrObj An QRMon object.
-#' @param functionBasis A list of basis functions or
+#' @param functionBasis A list of basis functions or formulas, or
 #' a basis matrix computed over the data abscissas.
 #' @param quantiles A numeric vector with quantiles.
 #' @return A QRMon object.
 #' @details
 #' When the argument \code{functionBasis} is a (basis) matrix it is expected
 #' to be evaluated over the data abscissas (\code{qrObj$Data$Time}).
+#' If the basis is given with formulas, each formula has to use "Value" and "Time".
+#' For example: \code{Value ~ sin(1+3*Time)}.
 #' The obtained regression objects are assigned/appended to the
 #' \code{qrObj$RegressionObjects}.
 #' For more computational details see \code{\link{quantreg::rq}}.
@@ -455,7 +466,7 @@ QRMonQuantileRegressionFit <- function( qrObj, functionBasis, quantiles = c(0.25
   if( is.matrix(functionBasis) ) {
 
     if( nrow(functionBasis) != nrow(data) ) {
-      warning( "When the argument functionBasis is a (basis) matrix it is expected to be to have number of rows that equals the data points.", call. = TRUE)
+      warning( "When the argument functionBasis is a matrix it is expected to have number of rows that equals the number of ≈data points.", call. = TRUE)
       return(QRMonFailureSymbol)
     }
 
@@ -467,6 +478,12 @@ QRMonQuantileRegressionFit <- function( qrObj, functionBasis, quantiles = c(0.25
       purrr::map_dfc( functionBasis, function(bf) {
         purrr::map_dbl( data$Time, function(x) bf(x) )
       })
+
+    fbModelMat <- as.matrix(fbModelMat)
+
+  } else if ( ListOfFormulasQ(functionBasis) ) {
+
+    fbModelMat <- FromFormulasToModelFrame(functionBasis, data)
 
     fbModelMat <- as.matrix(fbModelMat)
 

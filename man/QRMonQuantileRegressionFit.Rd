@@ -10,7 +10,7 @@ QRMonQuantileRegressionFit(qrObj, functionBasis, quantiles = c(0.25, 0.5,
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{functionBasis}{A list of basis functions or
+\item{functionBasis}{A list of basis functions or formulas, or
 a basis matrix computed over the data abscissas.}
 
 \item{quantiles}{A numeric vector with quantiles.}
@@ -25,6 +25,8 @@ using a specified function basis.
 \details{
 When the argument \code{functionBasis} is a (basis) matrix it is expected
 to be evaluated over the data abscissas (\code{qrObj$Data$Time}).
+If the basis is given with formulas, each formula has to use "Value" and "Time".
+For example: \code{Value ~ sin(1+3*Time)}.
 The obtained regression objects are assigned/appended to the
 \code{qrObj$RegressionObjects}.
 For more computational details see \code{\link{quantreg::rq}}.
