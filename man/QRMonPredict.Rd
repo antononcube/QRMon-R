@@ -4,7 +4,7 @@
 \alias{QRMonPredict}
 \title{Prediction with regression objects.}
 \usage{
-QRMonPredict(qrObj, newdata, ...)
+QRMonPredict(qrObj, newdata = NULL, ...)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}

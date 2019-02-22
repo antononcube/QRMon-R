@@ -34,8 +34,13 @@ summary(mcycle)
 ## Orlando temperature data
 
 ```{r}
+devtools::load_all()
+```
+
+```{r}
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>%
+  QRMonRescale(TRUE, TRUE) %>% 
   QRMonQuantileRegression( df = 12, degree = 3, quantiles = 1:9/10 ) %>% 
   QRMonPlot( dataPointsColor = "gray50", regressionCurvesColor = ~ RegressionCurve )
 ```

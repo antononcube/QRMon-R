@@ -347,6 +347,46 @@ QRMonEchoDataSummary <- function( qrObj ) {
 
 
 ##===========================================================
+## Rescale
+##===========================================================
+
+#' Rescale data.
+#' @description Rescale the data along axes specification.
+#' @param qrObj An QRMon object.
+#' @param timeAxisQ Should the data be rescaled along the time axis?
+#' @param valueAxisQ Should the data be rescaled along the value axis?
+#' @details The rescaled data replaces \code{qrObj$Data}.
+#' @return A QRMon object.
+#' @export
+QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonRescale" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  if ( timeAxisQ ) {
+    if( max(data$Time) > min(data$Time) ) {
+      data$Time <- ( data$Time - min(data$Time) ) / ( max(data$Time) - min(data$Time) )
+    } else {
+      data$Time <- 0
+    }
+  }
+
+  if ( valueAxisQ ) {
+    if( max(data$Value) > min(data$Value) ) {
+      data$Value <- ( data$Value - min(data$Value) ) / ( max(data$Value) - min(data$Value) )
+    } else {
+      data$Value <- 0
+    }
+  }
+
+  qrObj$Data <- data
+  qrObj
+}
+
+
+##===========================================================
 ## Quantile regression fit
 ##===========================================================
 
