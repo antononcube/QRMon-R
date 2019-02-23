@@ -412,7 +412,7 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
   rqFits <-
     purrr::map(
       quantiles,
-      function(tau) { rq(Value ~ bs(Time, ...), tau = tau, data = data ) })
+      function(tau) { quantreg::rq(Value ~ splines::bs(Time, ...), tau = tau, data = data ) })
   names(rqFits) <- quantiles
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
@@ -497,7 +497,7 @@ QRMonQuantileRegressionFit <- function( qrObj, functionBasis, quantiles = c(0.25
   rqFits <-
     purrr::map(
       quantiles,
-      function(tau) { rq(Value ~ fbModelMat, tau = tau, data = data ) })
+      function(tau) { quantreg::rq(Value ~ fbModelMat, tau = tau, data = data ) })
   names(rqFits) <- quantiles
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
@@ -1020,10 +1020,11 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
   } else {
     ## Find complements of the indices that belong to pairs of consecutive quantiles.
 
-    indGroups <- qs[order(as.numeric(indGroups))]
+    indGroups <- purrr::map( indGroups, function(x) (1:nrow(data))[x] )
+    indGroups <- indGroups[order(as.numeric(names(indGroups)))]
 
     if( length(indGroups) > 1 ) {
-      indGroups2 <- purrr::pmap( list( indGroups[-1], indGroups[-length(indGroups)] ), function(x,y) setdiff(y,x) )
+      indGroups2 <- purrr::pmap( list( indGroups[-1], indGroups[-length(indGroups)] ), function(x,y) setdiff(x,y) )
       indGroups <- setNames( c( indGroups[1], indGroups2 ), names(indGroups) )
     }
 
