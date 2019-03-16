@@ -26,7 +26,6 @@
 #' @import splines
 #' @import quantreg
 #' @import ggplot2
-#' @import devtools
 NULL
 
 ##===========================================================
@@ -879,7 +878,10 @@ PDFEstimateFunction <- function( qs, qvals ) {
 #' @param qrObj An QRMon object.
 #' @param timePoints Time points to compute CDF's upon.
 #' @return A QRMon object.
-#' @details The computations result is assigned to \code{qrObj$Value}.
+#' @details This function computes a list of
+#' Cumulative Distribution Functions (CDF's) that corresoind to the
+#' elements of \code{timePoints}.
+#' The list of CDF's is assigned to \code{qrObj$Value}.
 #' @export
 QRMonConditionalCDF <- function( qrObj, timePoints ) {
 
@@ -894,9 +896,10 @@ QRMonConditionalCDF <- function( qrObj, timePoints ) {
   }
 
   qvals <- qrObj %>% QRMonPredict( newdata = timePoints ) %>% QRMonTakeValue()
-  qvals <- purrr::map_df( names(qvals), function(x) cbind( Quantile = x, qvals[[x]] ))
+  qvals <- purrr::map_df( names(qvals), function(x) cbind( Quantile = x, qvals[[x]], stringsAsFactors = FALSE ) )
+  ## The following code line makes a dependency with dplyr.
+  ## qvals <- dplyr::bind_rows( qvals, .id = "Quantile")
   qvals$Quantile <- as.numeric( qvals$Quantile )
-
 
   res <-
     purrr::map( split(qvals, qvals$Time), function(x) {

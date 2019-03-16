@@ -18,5 +18,8 @@ A QRMon object.
 Computes conditional CDF's for given time points.
 }
 \details{
-The computations result is assigned to \code{qrObj$Value}.
+This function computes a list of
+Cumulative Distribution Functions (CDF's) that corresoind to the
+elements of \code{timePoints}.
+The list of CDF's is assigned to \code{qrObj$Value}.
 }
