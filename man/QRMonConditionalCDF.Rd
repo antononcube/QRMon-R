@@ -19,7 +19,13 @@ Computes conditional CDF's for given time points.
 }
 \details{
 This function computes a list of
-Cumulative Distribution Functions (CDF's) that corresoind to the
+Cumulative Distribution Functions (CDF's) that correspond to the
 elements of \code{timePoints}.
 The list of CDF's is assigned to \code{qrObj$Value}.
 }
+\seealso{
+Other Distribution functions: \code{\link{CDFApproximation}},
+  \code{\link{ExpectedValueApproximation}},
+  \code{\link{PDFApproximation}}
+}
+\concept{Distribution functions}

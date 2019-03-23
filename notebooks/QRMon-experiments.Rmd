@@ -90,7 +90,9 @@ plotDF <-
                  function(timePoint) {
                    xs <- qrmon %>% QRMonPredict( newdata = as.numeric(timePoint) ) %>% QRMonTakeValue()
                    xs <- purrr::map_dbl(xs, function(x) x$Value)
-                   cbind( Time = timePoint, purrr::map_df( xs, function(x) data.frame( Value = x, CDF = resCDFs[[timePoint]](x) ) ) )
+                   cbind( Time = timePoint, 
+                          purrr::map_df( xs, function(x) data.frame( Value = x, CDF = resCDFs[[timePoint]](x) ) ),
+                          stringsAsFactors = FALSE)
                  } )
 ```
 
@@ -176,5 +178,17 @@ ggplot( qDF ) +
   geom_line( aes( x = Time, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
 ```
+
+# Using formulas
+
+```{r}
+qrMon <- 
+  QRMonUnit( dfDistributionData ) %>% 
+  QRMonQuantileRegressionFit( formula = Value ~ cos(Time) + cos(2*Time) + Time^3, quantiles = 0.5 ) %>% 
+  QRMonPlot
+```
+
+```{r}
+qrMon %>% QRMonPredict( c(0, 0.5, 2) ) %>% QRMonTakeValue
 ```
 
