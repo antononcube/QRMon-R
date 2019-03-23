@@ -24,6 +24,8 @@ using a B-spline basis.
 The obtained regression objects are assigned/appended to the
 \code{qrObj$RegressionObjects}.
 For more computational details see \code{\link{quantreg::rq}}.
+This function can be seen as a splines-basis shortcut of
+\code{\link{QRMonQuantileRegressionFit}}.
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},

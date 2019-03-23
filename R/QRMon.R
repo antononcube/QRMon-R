@@ -399,6 +399,8 @@ QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
 #' @details The obtained regression objects are assigned/appended to the
 #' \code{qrObj$RegressionObjects}.
 #' For more computational details see \code{\link{quantreg::rq}}.
+#' This function can be seen as a splines-basis shortcut of
+#' \code{\link{QRMonQuantileRegressionFit}}.
 #' @family Regression functions
 #' @export
 QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... ) {
@@ -424,79 +426,40 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 ## Quantile regression fit
 ##===========================================================
 
-ListOfFunctionsQ <- function(fb) {
-  is.list(fb) && mean(purrr::map_lgl(fb, function(x) class(x) == "function")) == 1
-}
-
-ListOfFormulasQ <- function(fb) {
-  is.list(fb) && mean(purrr::map_lgl(fb, function(x) class(x) == "formula")) == 1
-}
-
-FromFormulasToModelFrame <- function( fms, data ) {
-  modelDF <- purrr::map_dfc( fms, function(f) model.frame( formula = f, data = data)[,2])
-  setNames(modelDF, purrr::map(fms, function(f) attributes(terms(f))$term.labels ) )
-}
-
 #' Quantile regression function basis fit.
 #' @description Finds the quantile regression objects for the specified quantiles
 #' using a specified function basis.
 #' @param qrObj An QRMon object.
-#' @param functionBasis A list of basis functions or formulas, or
-#' a basis matrix computed over the data abscissas.
+#' @param formula A formula.
 #' @param quantiles A numeric vector with quantiles.
+#' @param ... Arguments for  \code{\link{quantreg::rq}}.
 #' @return A QRMon object.
 #' @details
-#' When the argument \code{functionBasis} is a (basis) matrix it is expected
-#' to be evaluated over the data abscissas (\code{qrObj$Data$Time}).
-#' If the basis is given with formulas, each formula has to use "Value" and "Time".
+#' The formula has to use "Value" and "Time".
 #' For example: \code{Value ~ sin(1+3*Time)}.
-#' The obtained regression objects are assigned/appended to the
+#' The obtained regression objects are assigned/appended to
 #' \code{qrObj$RegressionObjects}.
 #' For more computational details see \code{\link{quantreg::rq}}.
 #' @family Regression functions
 #' @export
-QRMonQuantileRegressionFit <- function( qrObj, functionBasis, quantiles = c(0.25, 0.5, 0.75) ) {
+QRMonQuantileRegressionFit <- function( qrObj, formula, quantiles = c(0.25, 0.5, 0.75), ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegressionFit" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
-  if( is.matrix(functionBasis) ) {
-
-    if( nrow(functionBasis) != nrow(data) ) {
-      warning( "When the argument functionBasis is a matrix it is expected to have number of rows that equals the number of ≈data points.", call. = TRUE)
-      return(QRMonFailureSymbol)
-    }
-
-    fbModelMat <- functionBasis
-
-  } else if ( ListOfFunctionsQ(functionBasis) ) {
-
-    fbModelMat <-
-      purrr::map_dfc( functionBasis, function(bf) {
-        purrr::map_dbl( data$Time, function(x) bf(x) )
-      })
-
-    fbModelMat <- as.matrix(fbModelMat)
-
-  } else if ( ListOfFormulasQ(functionBasis) ) {
-
-    fbModelMat <- FromFormulasToModelFrame(functionBasis, data)
-
-    fbModelMat <- as.matrix(fbModelMat)
-
-  } else {
-
-    warning( "The argument functionBasis is expected to be a list of basis functions or a basis matrix.", call. = TRUE)
+  if( !is_formula(formula) ) {
+    warning( "The argument formula is expected to be a formula object.", call. = TRUE)
     return(QRMonFailureSymbol)
-
   }
 
   rqFits <-
     purrr::map(
       quantiles,
-      function(tau) { quantreg::rq(Value ~ fbModelMat, tau = tau, data = data ) })
+      function(tau) {
+        quantreg::rq( formula = formula, data = data, tau = tau, ... )
+      })
   names(rqFits) <- quantiles
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
@@ -597,7 +560,7 @@ QRMonPlot <- function( qrObj,
 
   qrDF <- purrr::map_df(names(qrDF), function(x) cbind( RegressionCurve = x, qrDF[[x]], stringsAsFactors = FALSE ) )
 
-  resPlot <- ggplot()
+  resPlot <- ggplot2::ggplot()
 
   data <- qrObj %>% QRMonTakeData()
 
@@ -610,17 +573,17 @@ QRMonPlot <- function( qrObj,
 
     resPlot <-
       resPlot +
-      geom_point( data = data,
-                  mapping = aes( x = Time, y = Value ), color = dataPointsColor )
+      ggplot2::geom_point( data = data,
+                           mapping = ggplot2::aes( x = Time, y = Value ), color = dataPointsColor )
   }
 
   if( !is.null(regressionCurvesColor) ) {
     resPlot <-
       resPlot +
       if( is.character(regressionCurvesColor) ) {
-        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, group = ~RegressionCurve ), color = regressionCurvesColor )
+        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Time, y = ~Value, group = ~RegressionCurve ), color = regressionCurvesColor )
       } else {
-        geom_line( data = qrDF, aes_( x = ~Time, y = ~Value, color = regressionCurvesColor ) )
+        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Time, y = ~Value, color = regressionCurvesColor ) )
       }
   }
 
@@ -838,10 +801,10 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
                    })
 
   resPlot <-
-    ggplot(res) +
-    geom_point( aes( x = Time, y = Error, color = RegressionCurve ) ) +
-    geom_segment( aes(x = Time, xend = Time, y = 0, yend = Error, color = RegressionCurve ) ) +
-    facet_wrap( ~RegressionCurve )
+    ggplot2::ggplot(res) +
+    ggplot2::geom_point( ggplot2::aes( x = Time, y = Error, color = RegressionCurve ) ) +
+    ggplot2::geom_segment( ggplot2::aes(x = Time, xend = Time, y = 0, yend = Error, color = RegressionCurve ) ) +
+    ggplot2::facet_wrap( ~RegressionCurve )
 
   qrObj$Value <- resPlot
 
@@ -854,24 +817,76 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
 
 
 ##===========================================================
-## Conditional distribution
+## Conditional distribution and related functions
 ##===========================================================
 
+#' CDF approximation.
+#' @description Computes an approximated PDF function
+#' using vectors of quantiles and quantile values.
 #' @param qs Quantiles.
 #' @param qvals Quantile values.
-CDFEstimateFunction <- function( qs, qvals ) {
+#' @family Distribution functions
+#' @export
+CDFApproximation <- function( qs, qvals ) {
+
+  names(qvals) <- NULL; names(qs) <- NULL
+
+  if( length(qs) != length(qvals) ) {
+    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  }
+
   ## splinefun( x = qvals, y = qs, method = "natural" )
   approxfun( x = qvals, y = qs, method = "linear" )
 }
 
+
+#' PDF approximation.
+#' @description Computes an approximated PDF function
+#' using vectors of quantiles and quantile values.
 #' @param qs Quantiles.
 #' @param qvals Quantile values.
-PDFEstimateFunction <- function( qs, qvals ) {
+#' @family Distribution functions
+#' @export
+PDFApproximation <- function( qs, qvals ) {
+
   names(qvals) <- NULL; names(qs) <- NULL
-  xs = ( qvals[-length(qvals)] + qvals[-1] ) / 2
-  ys = diff(qs) / diff(qvals)
+
+  if( length(qs) != length(qvals) ) {
+    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  }
+
+  xs <- ( qvals[-length(qvals)] + qvals[-1] ) / 2
+  ys <- diff(qs) / diff(qvals)
   approxfun( x = xs, y = ys, method = "constant" )
 }
+
+
+#' Expected value approximation.
+#' @description Computes an approximated expected value
+#' using vectors of quantiles and quantile values.
+#' @param qs Quantiles.
+#' @param qvals Quantile values.
+#' @family Distribution functions
+#' @export
+ExpectedValueApproximation <- function( qs, qvals ) {
+
+  names(qvals) <- NULL; names(qs) <- NULL
+
+  if( length(qs) != length(qvals) ) {
+    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  }
+
+  ## As the PDF x's and y's.
+  xs <- ( qvals[-length(qvals)] + qvals[-1] ) / 2
+  ys <- diff(qs) / diff(qvals)
+
+  ## Expectation formulation: Integrate[ x * PDF[x], {x, -Infinity, Infinity} ]
+  ys <- xs * ys
+
+  res <- purrr::map_dbl( 1:(length(xs)-1), function(i) { ( xs[i+1] - xs[i] ) * ( ys[i+1] + ys[i] ) } )
+  sum( res / 2 )
+}
+
 
 #' Conditional CDF computation.
 #' @description Computes conditional CDF's for given time points.
@@ -879,9 +894,10 @@ PDFEstimateFunction <- function( qs, qvals ) {
 #' @param timePoints Time points to compute CDF's upon.
 #' @return A QRMon object.
 #' @details This function computes a list of
-#' Cumulative Distribution Functions (CDF's) that corresoind to the
+#' Cumulative Distribution Functions (CDF's) that correspond to the
 #' elements of \code{timePoints}.
 #' The list of CDF's is assigned to \code{qrObj$Value}.
+#' @family Distribution functions
 #' @export
 QRMonConditionalCDF <- function( qrObj, timePoints ) {
 
@@ -903,7 +919,7 @@ QRMonConditionalCDF <- function( qrObj, timePoints ) {
 
   res <-
     purrr::map( split(qvals, qvals$Time), function(x) {
-       CDFEstimateFunction( qs = x$Quantile, qvals = x$Value )
+       CDFApproximation( qs = x$Quantile, qvals = x$Value )
     } )
 
   qrObj$Value <- res
