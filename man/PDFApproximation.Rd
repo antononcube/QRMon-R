@@ -4,12 +4,12 @@
 \alias{PDFApproximation}
 \title{PDF approximation.}
 \usage{
-PDFApproximation(qs, qvals)
+PDFApproximation(fractions, quantiles)
 }
 \arguments{
-\item{qs}{Quantiles.}
+\item{fractions}{Quantile fractions.}
 
-\item{qvals}{Quantile values.}
+\item{quantiles}{Quantile values.}
 }
 \description{
 Computes an approximated PDF function

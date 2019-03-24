@@ -390,10 +390,10 @@ QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
 ##===========================================================
 
 #' Quantile regression B-splines basis fit.
-#' @description Finds the quantile regression objects for the specified quantiles
-#' using a B-spline basis.
+#' @description Finds the quantile regression objects for the specified
+#' quantile fractions using a B-spline basis.
 #' @param qrObj An QRMon object.
-#' @param quantiles A numeric vector with quantiles.
+#' @param fractions A numeric vector with quantile fractions.
 #' @param ... parameters for \code{\link{splines::bs}}.
 #' @return A QRMon object.
 #' @details The obtained regression objects are assigned/appended to the
@@ -403,7 +403,7 @@ QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
 #' \code{\link{QRMonQuantileRegressionFit}}.
 #' @family Regression functions
 #' @export
-QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... ) {
+QRMonQuantileRegression <- function( qrObj, fractions = c(0.25, 0.5, 0.75), ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -412,9 +412,9 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 
   rqFits <-
     purrr::map(
-      quantiles,
+      fractions,
       function(tau) { quantreg::rq(Value ~ splines::bs(Time, ...), tau = tau, data = data ) })
-  names(rqFits) <- quantiles
+  names(rqFits) <- fractions
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
 
@@ -427,11 +427,11 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 ##===========================================================
 
 #' Quantile regression function basis fit.
-#' @description Finds the quantile regression objects for the specified quantiles
-#' using a specified function basis.
+#' @description Finds the quantile regression objects for the specified
+#' quantile fractions using a specified formula.
 #' @param qrObj An QRMon object.
 #' @param formula A formula.
-#' @param quantiles A numeric vector with quantiles.
+#' @param fractions A numeric vector with quantile fractions.
 #' @param ... Arguments for  \code{\link{quantreg::rq}}.
 #' @return A QRMon object.
 #' @details
@@ -442,7 +442,7 @@ QRMonQuantileRegression <- function( qrObj, quantiles = c(0.25, 0.5, 0.75), ... 
 #' For more computational details see \code{\link{quantreg::rq}}.
 #' @family Regression functions
 #' @export
-QRMonQuantileRegressionFit <- function( qrObj, formula, quantiles = c(0.25, 0.5, 0.75), ... ) {
+QRMonQuantileRegressionFit <- function( qrObj, formula, fractions = c(0.25, 0.5, 0.75), ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -456,11 +456,11 @@ QRMonQuantileRegressionFit <- function( qrObj, formula, quantiles = c(0.25, 0.5,
 
   rqFits <-
     purrr::map(
-      quantiles,
+      fractions,
       function(tau) {
         quantreg::rq( formula = formula, data = data, tau = tau, ... )
       })
-  names(rqFits) <- quantiles
+  names(rqFits) <- fractions
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
 
@@ -480,8 +480,8 @@ QRMonQuantileRegressionFit <- function( qrObj, formula, quantiles = c(0.25, 0.5,
 #' @param ... parameters for \code{\link{quantreg::predict.rq}}.
 #' @return A QRMon object.
 #' @details The result of the evaluation of the regression objects
-#' over the new data is a list of data frame. List's names are the quantiles
-#' that correspond to the regression objects.
+#' over the new data is a list of data frame. List's names are the
+#' quantile fractions that correspond to the regression objects.
 #' The list is assigned to \code{qrObj$Value}.
 #' @family Regression functions
 #' @export
@@ -822,41 +822,41 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
 
 #' CDF approximation.
 #' @description Computes an approximated PDF function
-#' using vectors of quantiles and quantile values.
-#' @param qs Quantiles.
-#' @param qvals Quantile values.
+#' using vectors of quantile fractions and quantiles.
+#' @param fractions Quantile fractions.
+#' @param quantiles Quantiles.
 #' @family Distribution functions
 #' @export
-CDFApproximation <- function( qs, qvals ) {
+CDFApproximation <- function( fractions, quantiles ) {
 
-  names(qvals) <- NULL; names(qs) <- NULL
+  names(quantiles) <- NULL; names(fractions) <- NULL
 
-  if( length(qs) != length(qvals) ) {
-    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  if( length(fractions) != length(quantiles) ) {
+    stop( "The lengths of the arguments fractions and quantiles are expected to be the same.", call. = TRUE )
   }
 
-  ## splinefun( x = qvals, y = qs, method = "natural" )
-  approxfun( x = qvals, y = qs, method = "linear" )
+  ## splinefun( x = quantiles, y = fractions, method = "natural" )
+  approxfun( x = quantiles, y = fractions, method = "linear" )
 }
 
 
 #' PDF approximation.
 #' @description Computes an approximated PDF function
 #' using vectors of quantiles and quantile values.
-#' @param qs Quantiles.
-#' @param qvals Quantile values.
+#' @param fractions Quantile fractions.
+#' @param quantiles Quantile values.
 #' @family Distribution functions
 #' @export
-PDFApproximation <- function( qs, qvals ) {
+PDFApproximation <- function( fractions, quantiles ) {
 
-  names(qvals) <- NULL; names(qs) <- NULL
+  names(quantiles) <- NULL; names(fractions) <- NULL
 
-  if( length(qs) != length(qvals) ) {
-    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  if( length(fractions) != length(quantiles) ) {
+    stop( "The lengths of the arguments fractions and quantiles are expected to be the same.", call. = TRUE )
   }
 
-  xs <- ( qvals[-length(qvals)] + qvals[-1] ) / 2
-  ys <- diff(qs) / diff(qvals)
+  xs <- ( quantiles[-length(quantiles)] + quantiles[-1] ) / 2
+  ys <- diff(fractions) / diff(quantiles)
   approxfun( x = xs, y = ys, method = "constant" )
 }
 
@@ -864,21 +864,21 @@ PDFApproximation <- function( qs, qvals ) {
 #' Expected value approximation.
 #' @description Computes an approximated expected value
 #' using vectors of quantiles and quantile values.
-#' @param qs Quantiles.
-#' @param qvals Quantile values.
+#' @param fractions Quantile fractions.
+#' @param quantiles Quantile values.
 #' @family Distribution functions
 #' @export
-ExpectedValueApproximation <- function( qs, qvals ) {
+ExpectedValueApproximation <- function( fractions, quantiles ) {
 
-  names(qvals) <- NULL; names(qs) <- NULL
+  names(quantiles) <- NULL; names(fractions) <- NULL
 
-  if( length(qs) != length(qvals) ) {
-    stop( "The lengths of the arguments qs and qvals are expected to be the same.", call. = TRUE )
+  if( length(fractions) != length(quantiles) ) {
+    stop( "The lengths of the arguments fractions and quantiles are expected to be the same.", call. = TRUE )
   }
 
   ## As the PDF x's and y's.
-  xs <- ( qvals[-length(qvals)] + qvals[-1] ) / 2
-  ys <- diff(qs) / diff(qvals)
+  xs <- ( quantiles[-length(quantiles)] + quantiles[-1] ) / 2
+  ys <- diff(fractions) / diff(quantiles)
 
   ## Expectation formulation: Integrate[ x * PDF[x], {x, -Infinity, Infinity} ]
   ys <- xs * ys
@@ -912,14 +912,14 @@ QRMonConditionalCDF <- function( qrObj, timePoints ) {
   }
 
   qvals <- qrObj %>% QRMonPredict( newdata = timePoints ) %>% QRMonTakeValue()
-  qvals <- purrr::map_df( names(qvals), function(x) cbind( Quantile = x, qvals[[x]], stringsAsFactors = FALSE ) )
+  qvals <- purrr::map_df( names(qvals), function(x) cbind( QuantileFraction = x, qvals[[x]], stringsAsFactors = FALSE ) )
   ## The following code line makes a dependency with dplyr.
-  ## qvals <- dplyr::bind_rows( qvals, .id = "Quantile")
-  qvals$Quantile <- as.numeric( qvals$Quantile )
+  ## qvals <- dplyr::bind_rows( qvals, .id = "QuantileFraction")
+  qvals$QuantileFraction <- as.numeric( qvals$QuantileFraction )
 
   res <-
     purrr::map( split(qvals, qvals$Time), function(x) {
-       CDFApproximation( qs = x$Quantile, qvals = x$Value )
+       CDFApproximation( fractions = x$QuantileFraction, quantiles =  x$Value )
     } )
 
   qrObj$Value <- res
@@ -1037,7 +1037,7 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
     names(pointGroups) <- names(indGroups)
 
   } else {
-    ## Find complements of the indices that belong to pairs of consecutive quantiles.
+    ## Find complements of the indices that belong to pairs of consecutive quantile fractions.
 
     indGroups <- purrr::map( indGroups, function(x) (1:nrow(data))[x] )
     indGroups <- indGroups[order(as.numeric(names(indGroups)))]

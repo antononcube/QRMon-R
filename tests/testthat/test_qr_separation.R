@@ -8,19 +8,19 @@ library(QRMon)
 
 qFracs0 <-
   QRMonUnit( dfTemperatureData ) %>%
-  QRMonQuantileRegression( df = 12, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>%
+  QRMonQuantileRegression( df = 12, degree = 3, fractions = seq(0.2,0.8,0.2) ) %>%
   QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 qFracs1 <-
   QRMonUnit( dfDistributionData ) %>%
-  QRMonQuantileRegression( df = 6, degree = 3, quantiles = seq(0.1,0.9,0.2) ) %>%
+  QRMonQuantileRegression( df = 6, degree = 3, fractions = seq(0.1,0.9,0.2) ) %>%
   QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 qFracs2 <-
   QRMonUnit( dfTemperatureData ) %>%
-  QRMonQuantileRegression( df = 6, degree = 3, quantiles = seq(0.2,0.8,0.2) ) %>%
+  QRMonQuantileRegression( df = 6, degree = 3, fractions = seq(0.2,0.8,0.2) ) %>%
   QRMonSeparateToFractions(cumulativeQ = FALSE) %>%
   QRMonTakeValue()
 

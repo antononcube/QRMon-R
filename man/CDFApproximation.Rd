@@ -4,16 +4,16 @@
 \alias{CDFApproximation}
 \title{CDF approximation.}
 \usage{
-CDFApproximation(qs, qvals)
+CDFApproximation(fractions, quantiles)
 }
 \arguments{
-\item{qs}{Quantiles.}
+\item{fractions}{Quantile fractions.}
 
-\item{qvals}{Quantile values.}
+\item{quantiles}{Quantiles.}
 }
 \description{
 Computes an approximated PDF function
-using vectors of quantiles and quantile values.
+using vectors of quantile fractions and quantiles.
 }
 \seealso{
 Other Distribution functions: \code{\link{ExpectedValueApproximation}},

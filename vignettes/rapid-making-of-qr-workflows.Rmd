@@ -145,7 +145,7 @@ combining in flexible ways the possible actions that can work on a particular ty
 ```{r, fig.width=9, fig.width=9}
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>%
-  QRMonQuantileRegression( df = 16, degree = 3, quantiles = c(0.01,0.99) ) %>%
+  QRMonQuantileRegression( df = 16, degree = 3, fractions = c(0.01,0.99) ) %>%
   QRMonOutliers() %>%
   QRMonOutliersPlot( datePlotQ = TRUE )
 ```
@@ -180,7 +180,7 @@ The formulation of the problem hints to an (almost) straightforward implementati
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 12, degree = 3, quantiles = c(0.01, 1:9/10, 0.99) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, fractions = c(0.01, 1:9/10, 0.99) ) %>% 
   QRMonPlot(dataPointsColor = "gray70", datePlotQ = TRUE, dateOrigin = "1900-01-01")
 ```
 

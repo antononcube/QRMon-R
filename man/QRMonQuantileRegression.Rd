@@ -4,12 +4,12 @@
 \alias{QRMonQuantileRegression}
 \title{Quantile regression B-splines basis fit.}
 \usage{
-QRMonQuantileRegression(qrObj, quantiles = c(0.25, 0.5, 0.75), ...)
+QRMonQuantileRegression(qrObj, fractions = c(0.25, 0.5, 0.75), ...)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{quantiles}{A numeric vector with quantiles.}
+\item{fractions}{A numeric vector with quantile fractions.}
 
 \item{...}{parameters for \code{\link{splines::bs}}.}
 }
@@ -17,8 +17,8 @@ QRMonQuantileRegression(qrObj, quantiles = c(0.25, 0.5, 0.75), ...)
 A QRMon object.
 }
 \description{
-Finds the quantile regression objects for the specified quantiles
-using a B-spline basis.
+Finds the quantile regression objects for the specified
+quantile fractions using a B-spline basis.
 }
 \details{
 The obtained regression objects are assigned/appended to the

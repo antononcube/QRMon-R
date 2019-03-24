@@ -4,12 +4,12 @@
 \alias{ExpectedValueApproximation}
 \title{Expected value approximation.}
 \usage{
-ExpectedValueApproximation(qs, qvals)
+ExpectedValueApproximation(fractions, quantiles)
 }
 \arguments{
-\item{qs}{Quantiles.}
+\item{fractions}{Quantile fractions.}
 
-\item{qvals}{Quantile values.}
+\item{quantiles}{Quantile values.}
 }
 \description{
 Computes an approximated expected value
