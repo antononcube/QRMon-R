@@ -9,7 +9,7 @@ QRMonPredict(qrObj, newdata = NULL, ...)
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{newdata}{A numeric vector, a data frame with a column 'Time', or NULL.}
+\item{newdata}{A numeric vector, a data frame with a column 'Regressor', or NULL.}
 
 \item{...}{parameters for \code{\link{quantreg::predict.rq}}.}
 }

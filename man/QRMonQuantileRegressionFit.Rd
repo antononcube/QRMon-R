@@ -24,8 +24,8 @@ Finds the quantile regression objects for the specified
 quantile fractions using a specified formula.
 }
 \details{
-The formula has to use "Value" and "Time".
-For example: \code{Value ~ sin(1+3*Time)}.
+The formula has to use "Value" and "Regressor".
+For example: \code{Value ~ sin(1+3*Regressor)}.
 The obtained regression objects are assigned/appended to
 \code{qrObj$RegressionObjects}.
 For more computational details see \code{\link{quantreg::rq}}.

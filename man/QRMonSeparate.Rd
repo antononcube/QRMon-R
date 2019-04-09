@@ -26,8 +26,8 @@ If no argument is given the data in the monad object is separated.
 \details{
 The result of the separation is a list of data frames assigned to \code{qrObj$Value}.
 Each data frame of that list corresponds to the found regression quantiles.
-If the data frame argument \code{data} has columns "Time" and "Value" those columns are used;
-otherwise the first and second columns are treated as "Time" and "Value" respectively.
+If the data frame argument \code{data} has columns "Regressor" and "Value" those columns are used;
+otherwise the first and second columns are treated as "Regressor" and "Value" respectively.
 }
 \seealso{
 Other Regression functions: \code{\link{QRMonPickPathPoints}},

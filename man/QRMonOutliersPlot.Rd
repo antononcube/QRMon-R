@@ -12,7 +12,7 @@ QRMonOutliersPlot(qrObj, plotRegressionCurvesQ = TRUE,
 
 \item{plotRegressionCurvesQ}{Should the regression curves be plotted or not?}
 
-\item{datePlotQ}{Should the time axis have dates scale?}
+\item{datePlotQ}{Should the regressor axis have dates scale?}
 
 \item{dateOrigin}{Same as the argument \code{origin} of \code{as.POSIXct}.}
 

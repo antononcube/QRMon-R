@@ -4,12 +4,12 @@
 \alias{QRMonRescale}
 \title{Rescale data.}
 \usage{
-QRMonRescale(qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE)
+QRMonRescale(qrObj, regressorAxisQ = TRUE, valueAxisQ = FALSE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{timeAxisQ}{Should the data be rescaled along the time axis?}
+\item{regressorAxisQ}{Should the data be rescaled along the regressor axis?}
 
 \item{valueAxisQ}{Should the data be rescaled along the value axis?}
 }

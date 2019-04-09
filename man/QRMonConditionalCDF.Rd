@@ -4,23 +4,23 @@
 \alias{QRMonConditionalCDF}
 \title{Conditional CDF computation.}
 \usage{
-QRMonConditionalCDF(qrObj, timePoints)
+QRMonConditionalCDF(qrObj, regressorValues)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{timePoints}{Time points to compute CDF's upon.}
+\item{regressorValues}{Regressor points to compute CDF's upon.}
 }
 \value{
 A QRMon object.
 }
 \description{
-Computes conditional CDF's for given time points.
+Computes conditional CDF's for given regressor points.
 }
 \details{
 This function computes a list of
 Cumulative Distribution Functions (CDF's) that correspond to the
-elements of \code{timePoints}.
+elements of \code{regressorValues}.
 The list of CDF's is assigned to \code{qrObj$Value}.
 }
 \seealso{

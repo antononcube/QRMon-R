@@ -10,8 +10,7 @@ library(magrittr)
 library(ggplot2)
 library(quantreg)
 library(splines)
-#library(QRMon)
-devtools::load_all()
+library(QRMon)
 ```
 
 # Introduction
@@ -80,7 +79,7 @@ qrmon <-
 ```{r}
 resCDFs <-
   qrmon %>% 
-  QRMonConditionalCDF( timePoints = c(-2,0) ) %>% 
+  QRMonConditionalCDF( regressorPoints = c(-2,0) ) %>% 
   QRMonTakeValue()
 ```
 
@@ -90,7 +89,7 @@ plotDF <-
                  function(timePoint) {
                    xs <- qrmon %>% QRMonPredict( newdata = as.numeric(timePoint) ) %>% QRMonTakeValue()
                    xs <- purrr::map_dbl(xs, function(x) x$Value)
-                   cbind( Time = timePoint, 
+                   cbind( Regressor = timePoint, 
                           purrr::map_df( xs, function(x) data.frame( Value = x, CDF = resCDFs[[timePoint]](x) ) ),
                           stringsAsFactors = FALSE)
                  } )
@@ -99,7 +98,7 @@ plotDF <-
 ```{r}
 ggplot(plotDF) +
   geom_line( aes(x = Value, y = CDF) ) +
-  facet_wrap( ~Time, scales = "free")
+  facet_wrap( ~Regressor, scales = "free")
 ```
 
 
@@ -154,7 +153,7 @@ qrmon <-
 
 ```{r}
 ggplot( (qrmon %>% QRMonTakeValue())[[1]] ) +
-  geom_point( aes( x = Time, y = Value ) )
+  geom_point( aes( x = Regressor, y = Value ) )
 ```
 
 
@@ -175,7 +174,7 @@ qrmon <- qrmon %>% QRMonSimulate(1000)
 qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
               cbind( Type = "Simulated", as.data.frame( qrmon %>% QRMonTakeValue() )))
 ggplot( qDF ) +
-  geom_line( aes( x = Time, y = Value ), color = "lightblue" ) +
+  geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
 ```
 
@@ -184,7 +183,7 @@ ggplot( qDF ) +
 ```{r}
 qrMon <- 
   QRMonUnit( dfDistributionData ) %>% 
-  QRMonQuantileRegressionFit( formula = Value ~ cos(Time) + cos(2*Time) + Time^3, fractions = 0.5 ) %>% 
+  QRMonQuantileRegressionFit( formula = Value ~ cos(Regressor) + cos(2*Regressor) + Regressor^3, fractions = 0.5 ) %>% 
   QRMonPlot
 ```
 
