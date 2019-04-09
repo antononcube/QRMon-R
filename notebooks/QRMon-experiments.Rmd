@@ -79,7 +79,7 @@ qrmon <-
 ```{r}
 resCDFs <-
   qrmon %>% 
-  QRMonConditionalCDF( regressorPoints = c(-2,0) ) %>% 
+  QRMonConditionalCDF( regressorValues = c(-2,0) ) %>% 
   QRMonTakeValue()
 ```
 
