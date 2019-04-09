@@ -119,31 +119,31 @@ QRMonSetData <- function( qrObj, data ) {
 
   if ( is.vector(data) ) {
 
-    QRMonSetData( qrObj, data.frame( Time = 1:length(data), Value = data ) )
+    QRMonSetData( qrObj, data.frame( Regressor = 1:length(data), Value = data ) )
 
   } else if ( ( is.matrix(data) || is.data.frame(data) ) && ncol(data) == 1 ) {
 
-    QRMonSetData( qrObj, data.frame( Time = 1:nrow(data), Value = data[,1] ) )
+    QRMonSetData( qrObj, data.frame( Regressor = 1:nrow(data), Value = data[,1] ) )
 
   } else if ( is.matrix(data) || is.data.frame(data) ) {
 
-    expectedColNames <- c("Time", "Value")
+    expectedColNames <- c("Regressor", "Value")
 
     if( ! ( is.data.frame(data) && length(intersect( colnames(data), expectedColNames)) == length(expectedColNames) ) ) {
       warning( paste( "The argument data is expected to be a data frame with columns: {", paste(expectedColNames, collapse =", "), "}."), call. = TRUE)
-      warning( paste0( "Proceeding by renaming the first columm \"", colnames(data)[[1]], "\" as \"Time\" ",
+      warning( paste0( "Proceeding by renaming the first columm \"", colnames(data)[[1]], "\" as \"Regressor\" ",
                        "and renaming the second columm \"", colnames(data)[[2]], "\" as \"Value\"." ), call. = TRUE )
       data <- data[,1:2]
-      colnames(data) <- c( "Time", "Value" )
+      colnames(data) <- c( "Regressor", "Value" )
     }
 
-    if( sum( class(data$Time) %in% c( "Date", "POSSIXt" ) ) > 0 ) {
+    if( sum( class(data$Regressor) %in% c( "Date", "POSSIXt" ) ) > 0 ) {
       warning( "Converting dates into seconds.", call. = TRUE)
-      data$Time <- as.numeric(data$Time, "second")
+      data$Regressor <- as.numeric(data$Regressor, "second")
     }
 
-    if( !is.numeric(data$Time) || !is.numeric(data$Value) ) {
-      warning( "The columns 'Time' and 'Value' of the argument data are expected to be numeric.", call. = TRUE)
+    if( !is.numeric(data$Regressor) || !is.numeric(data$Value) ) {
+      warning( "The columns 'Regressor' and 'Value' of the argument data are expected to be numeric.", call. = TRUE)
       return(QRMonFailureSymbol)
     }
 
@@ -352,23 +352,23 @@ QRMonEchoDataSummary <- function( qrObj ) {
 #' Rescale data.
 #' @description Rescale the data along axes specification.
 #' @param qrObj An QRMon object.
-#' @param timeAxisQ Should the data be rescaled along the time axis?
+#' @param regressorAxisQ Should the data be rescaled along the regressor axis?
 #' @param valueAxisQ Should the data be rescaled along the value axis?
 #' @details The rescaled data replaces \code{qrObj$Data}.
 #' @return A QRMon object.
 #' @export
-QRMonRescale <- function( qrObj, timeAxisQ = TRUE, valueAxisQ = FALSE ) {
+QRMonRescale <- function( qrObj, regressorAxisQ = TRUE, valueAxisQ = FALSE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonRescale" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
-  if ( timeAxisQ ) {
-    if( max(data$Time) > min(data$Time) ) {
-      data$Time <- ( data$Time - min(data$Time) ) / ( max(data$Time) - min(data$Time) )
+  if ( regressorAxisQ ) {
+    if( max(data$Regressor) > min(data$Regressor) ) {
+      data$Regressor <- ( data$Regressor - min(data$Regressor) ) / ( max(data$Regressor) - min(data$Regressor) )
     } else {
-      data$Time <- 0
+      data$Regressor <- 0
     }
   }
 
@@ -413,7 +413,7 @@ QRMonQuantileRegression <- function( qrObj, fractions = c(0.25, 0.5, 0.75), ... 
   rqFits <-
     purrr::map(
       fractions,
-      function(tau) { quantreg::rq(Value ~ splines::bs(Time, ...), tau = tau, data = data ) })
+      function(tau) { quantreg::rq(Value ~ splines::bs(Regressor, ...), tau = tau, data = data ) })
   names(rqFits) <- fractions
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
@@ -435,8 +435,8 @@ QRMonQuantileRegression <- function( qrObj, fractions = c(0.25, 0.5, 0.75), ... 
 #' @param ... Arguments for  \code{\link{quantreg::rq}}.
 #' @return A QRMon object.
 #' @details
-#' The formula has to use "Value" and "Time".
-#' For example: \code{Value ~ sin(1+3*Time)}.
+#' The formula has to use "Value" and "Regressor".
+#' For example: \code{Value ~ sin(1+3*Regressor)}.
 #' The obtained regression objects are assigned/appended to
 #' \code{qrObj$RegressionObjects}.
 #' For more computational details see \code{\link{quantreg::rq}}.
@@ -476,7 +476,7 @@ QRMonQuantileRegressionFit <- function( qrObj, formula, fractions = c(0.25, 0.5,
 #' @description Predict values with the monad object regression objects
 #' over specified new data.
 #' @param qrObj An QRMon object.
-#' @param newdata A numeric vector, a data frame with a column 'Time', or NULL.
+#' @param newdata A numeric vector, a data frame with a column 'Regressor', or NULL.
 #' @param ... parameters for \code{\link{quantreg::predict.rq}}.
 #' @return A QRMon object.
 #' @details The result of the evaluation of the regression objects
@@ -496,11 +496,11 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
   }
 
   if( is.vector(newdata) ) {
-    newdata <- data.frame( Time = newdata )
+    newdata <- data.frame( Regressor = newdata )
   }
 
-  if( ! ( is.null(newdata) || is.data.frame(newdata) && sum( "Time" %in% colnames(newdata) ) == 1 ) ) {
-    warning( "A numeric vector, data frame with a column 'Time', or NULL is expected for the argument newdata.", call. = TRUE )
+  if( ! ( is.null(newdata) || is.data.frame(newdata) && sum( "Regressor" %in% colnames(newdata) ) == 1 ) ) {
+    warning( "A numeric vector, data frame with a column 'Regressor', or NULL is expected for the argument newdata.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
@@ -509,7 +509,7 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
   }
 
   if( is.data.frame(newdata) ) {
-    newdata <- newdata[, "Time", drop = F]
+    newdata <- newdata[, "Regressor", drop = F]
   }
 
   qrRes <-
@@ -517,7 +517,7 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
       names(regObjs),
       function(x) {
         res <- predict( regObjs[[x]], newdata = newdata, ... )
-        data.frame( Time = newdata, Value = res )
+        data.frame( Regressor = newdata, Value = res )
       })
   names(qrRes) <- names(regObjs)
 
@@ -538,7 +538,7 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
 #' If NULL the data points are not plotted.
 #' @param regressionCurvesColor The color of the regression curves.
 #' If NULL the regression curves are not plotted.
-#' @param datePlotQ Should the time axis have dates scale?
+#' @param datePlotQ Should the regressor axis have dates scale?
 #' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
@@ -565,8 +565,8 @@ QRMonPlot <- function( qrObj,
   data <- qrObj %>% QRMonTakeData()
 
   if( datePlotQ ) {
-    data$Time <- as.POSIXct( data$Time, origin = dateOrigin )
-    qrDF$Time <- as.POSIXct( qrDF$Time, origin = dateOrigin )
+    data$Regressor <- as.POSIXct( data$Regressor, origin = dateOrigin )
+    qrDF$Regressor <- as.POSIXct( qrDF$Regressor, origin = dateOrigin )
   }
 
   if( !is.null(dataPointsColor) ) {
@@ -574,16 +574,16 @@ QRMonPlot <- function( qrObj,
     resPlot <-
       resPlot +
       ggplot2::geom_point( data = data,
-                           mapping = ggplot2::aes( x = Time, y = Value ), color = dataPointsColor )
+                           mapping = ggplot2::aes( x = Regressor, y = Value ), color = dataPointsColor )
   }
 
   if( !is.null(regressionCurvesColor) ) {
     resPlot <-
       resPlot +
       if( is.character(regressionCurvesColor) ) {
-        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Time, y = ~Value, group = ~RegressionCurve ), color = regressionCurvesColor )
+        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Regressor, y = ~Value, group = ~RegressionCurve ), color = regressionCurvesColor )
       } else {
-        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Time, y = ~Value, color = regressionCurvesColor ) )
+        ggplot2::geom_line( data = qrDF, ggplot2::aes_( x = ~Regressor, y = ~Value, color = regressionCurvesColor ) )
       }
   }
 
@@ -622,13 +622,13 @@ QRMonOutliers <- function( qrObj ) {
   outliers <-
     if( length(regObjs) == 1 && as.numeric(names(regObjs)[[1]]) < 0.5 ) {
 
-      predVals <- predict( regObjs[[1]], newdata = data[ , "Time", drop=F ] )
+      predVals <- predict( regObjs[[1]], newdata = data[ , "Regressor", drop=F ] )
       bottomOutliers <- data[ data$Value <= predVals, ]
       list( "bottomOutliers" = bottomOutliers )
 
     } else if ( length(regObjs) == 1 && as.numeric(names(regObjs)[[1]]) > 0.5  ) {
 
-      predVals <- predict( regObjs[[1]], newdata = data[ , "Time", drop=F ] )
+      predVals <- predict( regObjs[[1]], newdata = data[ , "Regressor", drop=F ] )
       topOutliers <- data[ data$Value >= predVals, ]
       list( "topOutliers" = topOutliers )
 
@@ -638,10 +638,10 @@ QRMonOutliers <- function( qrObj ) {
       minInd <- which.min( qs )
       maxInd <- which.max( qs )
 
-      predVals <- predict( regObjs[[minInd]], newdata = data[ , "Time", drop=F ] )
+      predVals <- predict( regObjs[[minInd]], newdata = data[ , "Regressor", drop=F ] )
       bottomOutliers <- data[ data$Value <= predVals, ]
 
-      predVals <- predict( regObjs[[maxInd]], newdata = data[ , "Time", drop=F ] )
+      predVals <- predict( regObjs[[maxInd]], newdata = data[ , "Regressor", drop=F ] )
       topOutliers <- data[ data$Value >= predVals, ]
 
       list( "bottomOutliers" = bottomOutliers, "topOutliers" = topOutliers )
@@ -663,7 +663,7 @@ QRMonOutliers <- function( qrObj ) {
 #' @description Plot the monad object data and found outliers.
 #' @param qrObj An QRMon object.
 #' @param plotRegressionCurvesQ Should the regression curves be plotted or not?
-#' @param datePlotQ Should the time axis have dates scale?
+#' @param datePlotQ Should the regressor axis have dates scale?
 #' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
@@ -706,12 +706,12 @@ QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE,
   }
 
   if( datePlotQ ) {
-    plotDataDF$Time <- as.POSIXct( plotDataDF$Time, origin = dateOrigin )
+    plotDataDF$Regressor <- as.POSIXct( plotDataDF$Regressor, origin = dateOrigin )
   }
 
   resPlot <-
     resPlot +
-    geom_point( data = plotDataDF, mapping = aes( x = Time, y = Value, color = Type ) )
+    geom_point( data = plotDataDF, mapping = aes( x = Regressor, y = Value, color = Type ) )
 
   if( echoQ ) { print(resPlot) }
 
@@ -746,13 +746,13 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
   res <-
     purrr::map( names(regObjs),
                    function(x) {
-                     errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
+                     errs <- predict( regObjs[[x]], newdata = data[, Regressor, drop = F] ) - data[, "Value" ]
 
                      if( relativeErrorsQ ) {
                        errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
                      }
 
-                     data.frame( Time = data[, "Time"], Error = errs )
+                     data.frame( Regressor = data[, "Regressor"], Error = errs )
                    })
   names(res) <- names(regObjs)
 
@@ -788,22 +788,22 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
   res <-
     purrr::map_df( names(regObjs),
                    function(x) {
-                     errs <- predict( regObjs[[x]], newdata = data[, "Time", drop = F] ) - data[, "Value" ]
+                     errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value" ]
 
                      if( relativeErrorsQ ) {
                        errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
                      }
 
                      data.frame( RegressionCurve = x,
-                                 Time = data[, "Time", drop = T],
+                                 Regressor = data[, "Regressor", drop = T],
                                  Error = errs,
                                  stringsAsFactors = F)
                    })
 
   resPlot <-
     ggplot2::ggplot(res) +
-    ggplot2::geom_point( ggplot2::aes( x = Time, y = Error, color = RegressionCurve ) ) +
-    ggplot2::geom_segment( ggplot2::aes(x = Time, xend = Time, y = 0, yend = Error, color = RegressionCurve ) ) +
+    ggplot2::geom_point( ggplot2::aes( x = Regressor, y = Error, color = RegressionCurve ) ) +
+    ggplot2::geom_segment( ggplot2::aes(x = Regressor, xend = Regressor, y = 0, yend = Error, color = RegressionCurve ) ) +
     ggplot2::facet_wrap( ~RegressionCurve )
 
   qrObj$Value <- resPlot
@@ -889,36 +889,36 @@ ExpectedValueApproximation <- function( fractions, quantiles ) {
 
 
 #' Conditional CDF computation.
-#' @description Computes conditional CDF's for given time points.
+#' @description Computes conditional CDF's for given regressor points.
 #' @param qrObj An QRMon object.
-#' @param timePoints Time points to compute CDF's upon.
+#' @param regressorValues Regressor points to compute CDF's upon.
 #' @return A QRMon object.
 #' @details This function computes a list of
 #' Cumulative Distribution Functions (CDF's) that correspond to the
-#' elements of \code{timePoints}.
+#' elements of \code{regressorValues}.
 #' The list of CDF's is assigned to \code{qrObj$Value}.
 #' @family Distribution functions
 #' @export
-QRMonConditionalCDF <- function( qrObj, timePoints ) {
+QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonConditionalCDF" )
   if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
 
-  if( !is.numeric(timePoints) ) {
-    warning( "The argument timePoints is expected to be a numeric vector.", call. = TRUE )
+  if( !is.numeric(regressorValues) ) {
+    warning( "The argument regressorValues is expected to be a numeric vector.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
-  qvals <- qrObj %>% QRMonPredict( newdata = timePoints ) %>% QRMonTakeValue()
+  qvals <- qrObj %>% QRMonPredict( newdata = regressorValues ) %>% QRMonTakeValue()
   qvals <- purrr::map_df( names(qvals), function(x) cbind( QuantileFraction = x, qvals[[x]], stringsAsFactors = FALSE ) )
   ## The following code line makes a dependency with dplyr.
   ## qvals <- dplyr::bind_rows( qvals, .id = "QuantileFraction")
   qvals$QuantileFraction <- as.numeric( qvals$QuantileFraction )
 
   res <-
-    purrr::map( split(qvals, qvals$Time), function(x) {
+    purrr::map( split(qvals, qvals$Regressor), function(x) {
        CDFApproximation( fractions = x$QuantileFraction, quantiles =  x$Value )
     } )
 
@@ -989,8 +989,8 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
 #' @return A QRMon object.
 #' @details The result of the separation is a list of data frames assigned to \code{qrObj$Value}.
 #' Each data frame of that list corresponds to the found regression quantiles.
-#' If the data frame argument \code{data} has columns "Time" and "Value" those columns are used;
-#' otherwise the first and second columns are treated as "Time" and "Value" respectively.
+#' If the data frame argument \code{data} has columns "Regressor" and "Value" those columns are used;
+#' otherwise the first and second columns are treated as "Regressor" and "Value" respectively.
 #' @family Regression functions
 #' @export
 QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = FALSE ) {
@@ -1012,7 +1012,7 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
 
   } else {
 
-    dataColNames <- c( "Time", "Value")
+    dataColNames <- c( "Regressor", "Value")
     if( colnames(data) %in% dataColNames ) {
       data <- data[, dataColNames]
     } else {
@@ -1111,7 +1111,7 @@ QRMonSimulate <- function( qrObj, n = 100 ) {
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   df <- qrObj %>% QRMonTakeData()
-  simPoints <- seq( min(df$Time), max(df$Time), ( max(df$Time) - min(df$Time) ) / (n-1) )
+  simPoints <- seq( min(df$Regressor), max(df$Regressor), ( max(df$Regressor) - min(df$Regressor) ) / (n-1) )
 
   qrObj <- qrObj %>% QRMonPredict( simPoints )
   simVals <- qrObj %>% QRMonTakeValue()
@@ -1122,7 +1122,7 @@ QRMonSimulate <- function( qrObj, n = 100 ) {
 
   simResDF <-
     simDF %>%
-    dplyr::group_by( Time ) %>%
+    dplyr::group_by( Regressor ) %>%
     dplyr::do( data.frame( Value = RandomPoint(.) ))
 
   qrObj$Value <- simResDF
