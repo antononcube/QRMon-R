@@ -62,7 +62,7 @@ Here is an example of using the QRMon monad over heteroscedastic data::
 
 ```{r, fig.width=8}
 qrmon <-
-  QRMonUnit( setNames( dfDistributionData, c("Time", "Value") ) ) %>%
+  QRMonUnit( setNames( dfDistributionData, c("Regressor", "Value") ) ) %>%
   QRMonEchoDataSummary() %>%
   QRMonQuantileRegression( df = 6 ) %>%
   QRMonPlot( dataPointsColor = "gray70", datePlotQ = TRUE, dateOrigin = "1900-01-01" )
@@ -155,11 +155,11 @@ names(res)
 ```
 
 ```{r}
-res[["topOutliers"]] %>% dplyr::mutate( Time = as.POSIXct(Time, origin="1900-01-01"))
+res[["topOutliers"]] %>% dplyr::mutate( Regressor = as.POSIXct(Regressor, origin="1900-01-01"))
 ```
 
 ```{r}
-res[["bottomOutliers"]] %>% dplyr::mutate( Time = as.POSIXct(Time, origin="1900-01-01"))
+res[["bottomOutliers"]] %>% dplyr::mutate( Regressor = as.POSIXct(Regressor, origin="1900-01-01"))
 ```
 
 ## Dependent variable simulation (simulate weather data)
@@ -194,7 +194,7 @@ qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
               cbind( Type = "Simulated.3", as.data.frame( qrmon %>% QRMonSimulate(1000) %>% QRMonTakeValue() ))
               )
 ggplot( qDF ) +
-  geom_line( aes( x = Time, y = Value ), color = "lightblue" ) +
+  geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
 ```
 
