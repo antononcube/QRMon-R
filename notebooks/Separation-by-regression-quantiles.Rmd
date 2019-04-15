@@ -83,7 +83,7 @@ the following pipeline:
 ```{r}
 qFracs <-
   QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value")) ) %>%  # Get data
-  QRMonQuantileRegression( df = 12, fractions = seq(0.2,0.8,0.2) ) %>%   # Quantile Regression with B-splines
+  QRMonQuantileRegression( df = 12, probabilities = seq(0.2,0.8,0.2) ) %>%   # Quantile Regression with B-splines
   QRMonPlot %>%                                                          # Plot data and regression quantiles
   QRMonSeparateToFractions %>%                                           # Separate the points and find fractions
   QRMonTakeValue                                                         # Take the value of the monad object
@@ -105,7 +105,7 @@ Consider the application of the points separation process for finding (and defin
 ```{r}
 qrObj<-
  QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value")) ) %>%
-  QRMonQuantileRegression( df = 16, fractions = c(0.01,0.98) ) %>% 
+  QRMonQuantileRegression( df = 16, probabilities = c(0.01,0.98) ) %>% 
   QRMonOutliers %>% 
   QRMonOutliersPlot
 ```
@@ -119,17 +119,17 @@ with different colors.
 
 First we compute a non-cumulative point separation:
 
-```{r}
+```{r, collapse=T}
 qFracPoints <-
   QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
-  QRMonQuantileRegression( df = 16, fractions = seq(0.2,0.8,0.2) ) %>%
+  QRMonQuantileRegression( df = 16, probabilities = seq(0.2,0.8,0.2) ) %>%
   QRMonPlot(datePlotQ = T, dateOrigin = "1900-01-01") %>%               # Make a date-axis plot
   QRMonSeparate( cumulativeQ = FALSE ) %>%                              # Non-cumulative point sets
   QRMonTakeValue()
 ```
 
 The following result shows that the found point sets have roughly the same number of elements that adhere 
-to the selected quantile fractions (proabilities).
+to the selected quantile proabilities.
 
 ```{r}
 rbind(
@@ -160,7 +160,7 @@ Let us first do Quantile Regression fit of the time series data:
 ```{r}
 qrmon <-
   QRMonUnit( setNames(dfTemperatureData, c("Time", "Value") )) %>% 
-  QRMonQuantileRegression( df = 16, fractions = c( 0.01, seq(0.1,0.9,0.1), 0.99) ) %>% 
+  QRMonQuantileRegression( df = 16, probabilities = c( 0.01, seq(0.1,0.9,0.1), 0.99) ) %>% 
   QRMonPlot(datePlotQ = TRUE, dateOrigin = "1900-01-01" )
 ```
 

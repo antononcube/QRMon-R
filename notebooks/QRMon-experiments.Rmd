@@ -40,7 +40,7 @@ devtools::load_all()
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>%
   QRMonRescale(TRUE, TRUE) %>% 
-  QRMonQuantileRegression( df = 12, degree = 3, fractions = 1:9/10 ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, probabilities = 1:9/10 ) %>% 
   QRMonPlot( dataPointsColor = "gray50", regressionCurvesColor = ~ RegressionCurve )
 ```
 
@@ -57,7 +57,7 @@ of the package ["quantreg"](https://cran.r-project.org/web/packages/quantreg/ind
 ```{r}
 qrmon <-
   QRMonUnit( mcycle ) %>%
-  QRMonQuantileRegression( df = 12, degree = 3, fractions = seq(0.2,0.8,0.2) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, probabilities = seq(0.2,0.8,0.2) ) %>% 
   QRMonPlot( dataPointsColor = "gray10", regressionCurvesColor = ~ RegressionCurve )
 ```
 
@@ -72,7 +72,7 @@ qrmon %>% QRMonSeparateToFractions() %>% QRMonTakeValue()
 ```{r}
 qrmon <-
   QRMonUnit( dfDistributionData ) %>% 
-  QRMonQuantileRegression( df = 6, degree = 3, fractions = 1:9/10 ) %>% 
+  QRMonQuantileRegression( df = 6, degree = 3, probabilities = 1:9/10 ) %>% 
   QRMonPlot()
 ```
 
@@ -109,7 +109,7 @@ ggplot(plotDF) +
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 16, fractions = c(0.02,0.98) ) %>% 
+  QRMonQuantileRegression( df = 16, probabilities = c(0.02,0.98) ) %>% 
   QRMonOutliers() %>% 
   QRMonOutliersPlot( plotRegressionCurvesQ = TRUE )
 ```
@@ -133,8 +133,8 @@ data.189185 <-
 ```{r}
 res <-
   QRMonUnit( data.189185 ) %>%
-  QRMonQuantileRegression( df = 12, degree = 3, fractions = 0.5 ) %>% 
-  QRMonQuantileRegression( df = 3, degree = 2, fractions = 0.55 ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, probabilities = 0.5 ) %>% 
+  QRMonQuantileRegression( df = 3, degree = 2, probabilities = 0.55 ) %>% 
   QRMonPlot() %>% 
   QRMonErrorsPlot() %>% 
   QRMonTakeValue()
@@ -145,7 +145,7 @@ res <-
 ```{r}
 qrmon <-
   QRMonUnit( mcycle) %>%
-  QRMonQuantileRegression( df = 12, degree = 3, fractions = 0.5 ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, probabilities = 0.5 ) %>% 
   QRMonPlot( dataPointsColor = "gray50", regressionCurvesColor = ~ RegressionCurve ) %>% 
   QRMonErrorsPlot() %>% 
   QRMonPickPathPoints( threshold = 10, pickAboveThresholdQ = FALSE )
@@ -165,7 +165,7 @@ qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonEchoDataSummary() %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 16, fractions = c(0.01, 1:7/8, 0.99) ) %>% 
+  QRMonQuantileRegression( df = 16, probabilities = c(0.01, 1:7/8, 0.99) ) %>% 
   QRMonPlot(dataPointsColor = "gray70")
 ```
 
@@ -183,7 +183,7 @@ ggplot( qDF ) +
 ```{r}
 qrMon <- 
   QRMonUnit( dfDistributionData ) %>% 
-  QRMonQuantileRegressionFit( formula = Value ~ cos(Regressor) + cos(2*Regressor) + Regressor^3, fractions = 0.5 ) %>% 
+  QRMonQuantileRegressionFit( formula = Value ~ cos(Regressor) + cos(2*Regressor) + Regressor^3, probabilities = 0.5 ) %>% 
   QRMonPlot
 ```
 

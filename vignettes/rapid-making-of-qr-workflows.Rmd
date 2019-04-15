@@ -145,7 +145,7 @@ combining in flexible ways the possible actions that can work on a particular ty
 ```{r, fig.width=9, fig.width=9}
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>%
-  QRMonQuantileRegression( df = 16, degree = 3, fractions = c(0.01,0.99) ) %>%
+  QRMonQuantileRegression( df = 16, degree = 3, probabilities = c(0.01,0.99) ) %>%
   QRMonOutliers() %>%
   QRMonOutliersPlot( datePlotQ = TRUE )
 ```
@@ -180,7 +180,7 @@ The formulation of the problem hints to an (almost) straightforward implementati
 qrmon <-
   QRMonUnit( dfTemperatureData ) %>% 
   QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 12, degree = 3, fractions = c(0.01, 1:9/10, 0.99) ) %>% 
+  QRMonQuantileRegression( df = 12, degree = 3, probabilities = c(0.01, 1:9/10, 0.99) ) %>% 
   QRMonPlot(dataPointsColor = "gray70", datePlotQ = TRUE, dateOrigin = "1900-01-01")
 ```
 
@@ -194,8 +194,34 @@ qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
               cbind( Type = "Simulated.3", as.data.frame( qrmon %>% QRMonSimulate(1000) %>% QRMonTakeValue() ))
               )
 ggplot( qDF ) +
-  geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
+  geom_line( aes( x = as.POSIXct(Regressor, origin = "1900-01-01"), y = Value ), color = "lightblue" ) +
+  xlab("Time") + ylab("Temperature") +
   facet_wrap( ~Type, ncol=1)
+```
+
+## Conditional CDF
+
+With the fitted regression quantiles we can compute the conditional CDF for a given regressor value.
+
+Here we select a random point and get the corresponding conditional CDF function:
+
+```{r}
+set.seed(7493)
+resCDF <-
+  qrmon %>% 
+  QRMonConditionalCDF( sample(dfTemperatureData$Time,1) ) %>% 
+  QRMonTakeValue
+```
+
+Here we plot the CDF:
+
+```{r}
+temps <- seq(0,40,0.5)
+qDF <- data.frame( Temperature = temps, Probability = purrr::map_dbl( temps, resCDF), stringsAsFactors = F)
+qDF <- qDF[complete.cases(qDF), ]
+ggplot(qDF) +
+  geom_line( aes( x = Temperature, y = Probability ) ) +
+  labs( title = element_text( paste( "CDF for time point:", as.POSIXct(as.numeric(names(resCDF)), origin = "1900-01-01") ) ) )
 ```
 
 
