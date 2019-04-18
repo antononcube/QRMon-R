@@ -16,7 +16,7 @@ Here is an example:
     qrmon <-
       QRMonUnit( dfTemperatureData ) %>%
       QRMonEchoDataSummary() %>%
-      QRMonQuantileRegression( df = 16, degree = 3, fractions = seq(0.1,0.9,0.2) ) %>%
+      QRMonQuantileRegression( df = 16, degree = 3, probabilities = seq(0.1,0.9,0.2) ) %>%
       QRMonPlot( datePlotQ = TRUE, dateOrigin = "1900-01-01" )
       
 For detailed explanations see the vignette 
