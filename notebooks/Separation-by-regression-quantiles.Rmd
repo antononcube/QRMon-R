@@ -26,6 +26,7 @@ The package/library QRMon can be installed with the command:
 ```{r, eval=F}
 devtools::install_github("antononcube/QRMon-R")
 ```
+
 Then we load that package with:
 
 ```{r}
@@ -82,11 +83,11 @@ the following pipeline:
 
 ```{r}
 qFracs <-
-  QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value")) ) %>%  # Get data
+  QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value")) ) %>%      # Get data
   QRMonQuantileRegression( df = 12, probabilities = seq(0.2,0.8,0.2) ) %>%   # Quantile Regression with B-splines
-  QRMonPlot %>%                                                          # Plot data and regression quantiles
-  QRMonSeparateToFractions %>%                                           # Separate the points and find fractions
-  QRMonTakeValue                                                         # Take the value of the monad object
+  QRMonPlot %>%                                                              # Plot data and regression quantiles
+  QRMonSeparateToFractions %>%                                               # Separate the points and find fractions
+  QRMonTakeValue                                                             # Take the value of the monad object
 ```
 
 
@@ -180,4 +181,13 @@ ggplot( qDF ) +
 ```
 
 Simulations like these can be used in some Operations Research applications.
+
+# Conditional CDF
+
+```{r}
+qrmon2 <- qrmon %>% QRMonConditionalCDFPlot( sample( dfTemperatureData$Time, 12), 
+                                             quantileGridLinesQ = T, 
+                                             ncol = 3, scales = "fixed" )
+```
+
 

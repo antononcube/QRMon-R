@@ -4,18 +4,23 @@
 \alias{QRMonConditionalCDFPlot}
 \title{Conditional CDF plot.}
 \usage{
-QRMonConditionalCDFPlot(qrObj, regressorValue, valueGridPoints = NULL,
-  echoQ = TRUE)
+QRMonConditionalCDFPlot(qrObj, regressorValues, valueGridPoints = NULL,
+  quantileGridLinesQ = TRUE, echoQ = TRUE, ...)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
-\item{regressorValue}{A regressor point to compute CDF's upon.}
+\item{regressorValues}{Regressor points to compute CDF's upon.}
 
 \item{valueGridPoints}{Grid points to use for the value(response) variable.
 If NULL the grid points are derived from response variable's range in the data.}
 
+\item{quantileGridLinesQ}{Should the quantiles be indicated with vertical grid lines or not?}
+
 \item{echoQ}{To echo the plot the or not?}
+
+\item{...}{Arguments for \link{\code{ggplot2::facet_wrap}}.
+(In order to plot additional vertical lines.)}
 }
 \value{
 A QRMon object.

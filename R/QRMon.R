@@ -932,52 +932,52 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' Conditional CDF plot.
 #' @description Computes conditional CDF's for given regressor points and makes corresponding plots.
 #' @param qrObj An QRMon object.
-#' @param regressorValue A regressor point to compute CDF's upon.
+#' @param regressorValues Regressor points to compute CDF's upon.
 #' @param valueGridPoints Grid points to use for the value(response) variable.
 #' If NULL the grid points are derived from response variable's range in the data.
 #' @param quantileGridLinesQ Should the quantiles be indicated with vertical grid lines or not?
 #' @param echoQ To echo the plot the or not?
-#' @param ... Arguments for \link{\code{ggplot2::geom_vline}}.
+#' @param ... Arguments for \link{\code{ggplot2::facet_wrap}}.
 #' (In order to plot additional vertical lines.)
 #' @return A QRMon object.
 #' @details This function uses \link{\code{QRMonConditionalCDF}}.
 #' @family Distribution functions
 #' @export
-QRMonConditionalCDFPlot <- function( qrObj, regressorValue, valueGridPoints = NULL,
-                                     quantileGridLinesQ = TRUE, echoQ = TRUE, ... ) {
+QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = NULL,
+                                    quantileGridLinesQ = TRUE, echoQ = TRUE, ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  focusPoint <- regressorValue[[1]]
-  cdfFunc <- qrObj %>% QRMonConditionalCDF( regressorValues = c(focusPoint) ) %>% QRMonTakeValue
-  cdfFunc <- cdfFunc[[1]]
+  #focusPoint <- regressorValues[[1]]
+  cdfFuncs <- qrObj %>% QRMonConditionalCDF( regressorValues = regressorValues ) %>% QRMonTakeValue
 
   if( is.null(valueGridPoints) ) {
     data <- qrObj %>% QRMonTakeData
     valueGridPoints <- seq( min(data$Value), max(data$Value), (max(data$Value) - min(data$Value)) / (100-1) )
   }
 
-  qDF <- data.frame(  Value = valueGridPoints, CDF = purrr::map_dbl( valueGridPoints, function(x) cdfFunc(x) ) )
+  qDF <-
+    purrr::map_df(
+      names(cdfFuncs), function(reg) {
+        data.frame(  Regressor = as.numeric(reg),
+                     Value = valueGridPoints,
+                     CDF = purrr::map_dbl( valueGridPoints, function(x) cdfFuncs[[reg]](x) ) )
+      })
+
   qDF <- qDF[ complete.cases(qDF), ]
 
-  dfDist <- qrObj %>% QRMonPredict( newdata = c(focusPoint) ) %>% QRMonTakeValue
+  dfDist <- qrObj %>% QRMonPredict( newdata = regressorValues ) %>% QRMonTakeValue
   ## Note the dplyr dependence
   dfDist <- purrr::map_df( names(dfDist), function(x) cbind( Quantile = as.numeric(x), dfDist[[x]] ) )
 
-  res <-
-    ggplot2::ggplot(qDF) +
-    ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) )
+
 
   if( quantileGridLinesQ ) {
     res <-
-      res +
-      ggplot2::geom_vline( xintercept = dfDist$Value, linetype = "dotted", color = "gray20", size = 0.5 )
-  }
-
-  if( length(list(...)) > 0 ) {
-    res <-
-      res +
-      ggplot2::geom_vline( ... )
+      ggplot2::ggplot(qDF) +
+      ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) ) +
+      ggplot2::geom_vline( data = dfDist, aes(xintercept = Value), linetype = "dotted", color = "gray20", size = 0.5 ) +
+      ggplot2::facet_wrap( ~Regressor, ... )
   }
 
   if( echoQ ) {
