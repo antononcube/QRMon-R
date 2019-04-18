@@ -4,7 +4,7 @@
 \alias{QRMonQuantileRegressionFit}
 \title{Quantile regression function basis fit.}
 \usage{
-QRMonQuantileRegressionFit(qrObj, formula, fractions = c(0.25, 0.5,
+QRMonQuantileRegressionFit(qrObj, formula, probabilities = c(0.25, 0.5,
   0.75), ...)
 }
 \arguments{
@@ -12,7 +12,7 @@ QRMonQuantileRegressionFit(qrObj, formula, fractions = c(0.25, 0.5,
 
 \item{formula}{A formula.}
 
-\item{fractions}{A numeric vector with quantile fractions.}
+\item{probabilities}{A numeric vector with quantile probabilities.}
 
 \item{...}{Arguments for  \code{\link{quantreg::rq}}.}
 }
@@ -21,7 +21,7 @@ A QRMon object.
 }
 \description{
 Finds the quantile regression objects for the specified
-quantile fractions using a specified formula.
+quantile probabilities using a specified formula.
 }
 \details{
 The formula has to use "Value" and "Regressor".

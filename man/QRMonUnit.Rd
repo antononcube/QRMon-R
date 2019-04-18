@@ -2,7 +2,7 @@
 % Please edit documentation in R/QRMon.R
 \name{QRMonUnit}
 \alias{QRMonUnit}
-\title{Make a QRMon Unit}
+\title{Make a QRMon unit (object.)}
 \usage{
 QRMonUnit(data = NULL)
 }

@@ -4,10 +4,10 @@
 \alias{ExpectedValueApproximation}
 \title{Expected value approximation.}
 \usage{
-ExpectedValueApproximation(fractions, quantiles)
+ExpectedValueApproximation(probabilities, quantiles)
 }
 \arguments{
-\item{fractions}{Quantile fractions.}
+\item{probabilities}{Quantile probabilities.}
 
 \item{quantiles}{Quantile values.}
 }
@@ -18,6 +18,7 @@ using vectors of quantiles and quantile values.
 \seealso{
 Other Distribution functions: \code{\link{CDFApproximation}},
   \code{\link{PDFApproximation}},
+  \code{\link{QRMonConditionalCDFPlot}},
   \code{\link{QRMonConditionalCDF}}
 }
 \concept{Distribution functions}

@@ -23,7 +23,7 @@ over specified new data.
 \details{
 The result of the evaluation of the regression objects
 over the new data is a list of data frame. List's names are the
-quantile fractions that correspond to the regression objects.
+quantile probabilities that correspond to the regression objects.
 The list is assigned to \code{qrObj$Value}.
 }
 \seealso{
