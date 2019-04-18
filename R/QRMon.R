@@ -985,7 +985,8 @@ QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = N
     res <-
       ggplot2::ggplot(qDF) +
       ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) ) +
-      ggplot2::geom_vline( data = dfDist, aes(xintercept = Value), linetype = "dotted", color = "gray20", size = 0.5 ) +
+      ggplot2::geom_vline( data = dfDist, mapping = aes(xintercept = Value), linetype = "dotted", color = "gray20", size = 0.5 ) +
+      ggplot2::geom_text(data = dfDist, mapping = aes( x = Value, y=0, label = dfDist$Quantile ), size=2, angle=90, vjust=-0.4, hjust=0) +
       ggplot2::facet_wrap( ~Regressor, ... )
 
   } else {
