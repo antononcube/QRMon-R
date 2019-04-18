@@ -187,7 +187,8 @@ Simulations like these can be used in some Operations Research applications.
 ```{r}
 qrmon2 <- qrmon %>% QRMonConditionalCDFPlot( sample( dfTemperatureData$Time, 12), 
                                              quantileGridLinesQ = T, 
-                                             ncol = 3, scales = "fixed" )
+                                             dateOrigin = "1900-01-01",
+                                             ncol = 3, scales = "free_x" )
 ```
 
 

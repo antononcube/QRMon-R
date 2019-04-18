@@ -935,6 +935,9 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' @param regressorValues Regressor points to compute CDF's upon.
 #' @param valueGridPoints Grid points to use for the value(response) variable.
 #' If NULL the grid points are derived from response variable's range in the data.
+#' @param dateOrigin Date origin if the regressor conversiont to time-date.
+#' If NULL no conversion is done.
+#' Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param quantileGridLinesQ Should the quantiles be indicated with vertical grid lines or not?
 #' @param echoQ To echo the plot the or not?
 #' @param ... Arguments for \link{\code{ggplot2::facet_wrap}}.
@@ -944,7 +947,8 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' @family Distribution functions
 #' @export
 QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = NULL,
-                                    quantileGridLinesQ = TRUE, echoQ = TRUE, ... ) {
+                                     dateOrigin = NULL,
+                                     quantileGridLinesQ = TRUE, echoQ = TRUE, ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -971,13 +975,26 @@ QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = N
   dfDist <- purrr::map_df( names(dfDist), function(x) cbind( Quantile = as.numeric(x), dfDist[[x]] ) )
 
 
+  if( !is.null(dateOrigin) ) {
+    qDF$Regressor <- as.POSIXct( qDF$Regressor, origin = dateOrigin )
+    dfDist$Regressor <- as.POSIXct( dfDist$Regressor, origin = dateOrigin )
+  }
 
   if( quantileGridLinesQ ) {
+
     res <-
       ggplot2::ggplot(qDF) +
       ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) ) +
       ggplot2::geom_vline( data = dfDist, aes(xintercept = Value), linetype = "dotted", color = "gray20", size = 0.5 ) +
       ggplot2::facet_wrap( ~Regressor, ... )
+
+  } else {
+
+    res <-
+      ggplot2::ggplot(qDF) +
+      ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) ) +
+      ggplot2::facet_wrap( ~Regressor, ... )
+
   }
 
   if( echoQ ) {

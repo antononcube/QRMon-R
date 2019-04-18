@@ -5,7 +5,7 @@
 \title{Conditional CDF plot.}
 \usage{
 QRMonConditionalCDFPlot(qrObj, regressorValues, valueGridPoints = NULL,
-  quantileGridLinesQ = TRUE, echoQ = TRUE, ...)
+  dateOrigin = NULL, quantileGridLinesQ = TRUE, echoQ = TRUE, ...)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -14,6 +14,10 @@ QRMonConditionalCDFPlot(qrObj, regressorValues, valueGridPoints = NULL,
 
 \item{valueGridPoints}{Grid points to use for the value(response) variable.
 If NULL the grid points are derived from response variable's range in the data.}
+
+\item{dateOrigin}{Date origin if the regressor conversiont to time-date.
+If NULL no conversion is done.
+Same as the argument \code{origin} of \code{as.POSIXct}.}
 
 \item{quantileGridLinesQ}{Should the quantiles be indicated with vertical grid lines or not?}
 
