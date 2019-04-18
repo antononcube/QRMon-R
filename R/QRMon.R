@@ -935,12 +935,16 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' @param regressorValue A regressor point to compute CDF's upon.
 #' @param valueGridPoints Grid points to use for the value(response) variable.
 #' If NULL the grid points are derived from response variable's range in the data.
+#' @param quantileGridLinesQ Should the quantiles be indicated with vertical grid lines or not?
 #' @param echoQ To echo the plot the or not?
+#' @param ... Arguments for \link{\code{ggplot2::geom_vline}}.
+#' (In order to plot additional vertical lines.)
 #' @return A QRMon object.
 #' @details This function uses \link{\code{QRMonConditionalCDF}}.
 #' @family Distribution functions
 #' @export
-QRMonConditionalCDFPlot <- function( qrObj, regressorValue, valueGridPoints = NULL, echoQ = TRUE ) {
+QRMonConditionalCDFPlot <- function( qrObj, regressorValue, valueGridPoints = NULL,
+                                     quantileGridLinesQ = TRUE, echoQ = TRUE, ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -961,10 +965,20 @@ QRMonConditionalCDFPlot <- function( qrObj, regressorValue, valueGridPoints = NU
   dfDist <- purrr::map_df( names(dfDist), function(x) cbind( Quantile = as.numeric(x), dfDist[[x]] ) )
 
   res <-
-    ggplot(qDF) +
-    geom_line( aes( x = Value, y = CDF) ) +
-    geom_vline( xintercept = dfDist$Value, linetype = "dotted", color = "gray20", size = 0.5 )
-    # geom_vline( xintercept = focusPoint, linetype = "solid", color = "lightblue", size = 0.5 )
+    ggplot2::ggplot(qDF) +
+    ggplot2::geom_line( ggplot2::aes( x = Value, y = CDF) )
+
+  if( quantileGridLinesQ ) {
+    res <-
+      res +
+      ggplot2::geom_vline( xintercept = dfDist$Value, linetype = "dotted", color = "gray20", size = 0.5 )
+  }
+
+  if( length(list(...)) > 0 ) {
+    res <-
+      res +
+      ggplot2::geom_vline( ... )
+  }
 
   if( echoQ ) {
     print(res)
