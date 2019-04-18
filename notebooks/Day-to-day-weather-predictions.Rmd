@@ -1,0 +1,51 @@
+---
+title: "Day to day weather predictions"
+author: Anton Antonov
+date: 2019-04-18
+output: html_notebook
+---
+
+```{r}
+library(QRMon)
+library(splines)
+library(quantreg)
+library(purrr)
+library(magrittr)
+library(ggplot2)
+```
+
+
+## Temperature prediction 
+
+In this sub-section we compute the conditional distribution of tomorrow's temperature 
+given today's temperature.
+
+```{r}
+weVec <- dfTemperatureData$Temperature
+qDF <- data.frame( YesterdayValue = weVec[-length(weVec)], TodayValue = weVec[-1] )
+qs <- c(0.01,seq(0.1,0.9,0.1),0.99)
+qrTempObj <- 
+  QRMonUnit( setNames( qDF, c("Regressor", "Value") ) ) %>% 
+  QRMonQuantileRegression( df = 6, degree = 3, probabilities = qs )
+```
+
+
+```{r}
+qrTempObj <- qrTempObj %>% QRMonPlot
+```
+
+Here is an example of a prediction for tomorrow's temperature given that the temperature today is \[18^{\circ}C\].
+
+```{r}
+res <- qrTempObj %>% QRMonPredict( newdata = c(23) ) %>% QRMonTakeValue
+res <- setNames( dplyr::bind_rows( res, .id = "Quantile" ), c("Quantile", "TodayTemperature", "TomorrowTemperture") )
+res$Quantile <- as.numeric(res$Quantile)
+res
+```
+
+```{r}
+qrTempObj2 <- qrTempObj %>% QRMonConditionalCDFPlot(28, echoQ = F)
+(qrTempObj2 %>% QRMonTakeValue) +
+  ggplot2::geom_vline( xintercept = 28, color = "lightblue" )
+```
+
