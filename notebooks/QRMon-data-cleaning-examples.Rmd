@@ -1,0 +1,120 @@
+---
+title: "QRMon data cleaning examples"
+author: "Anton Antonov"
+date: "1/22/2019"
+output: html_notebook
+---
+
+```{r}
+library(magrittr)
+library(ggplot2)
+library(quantreg)
+library(splines)
+library(QRMon)
+```
+
+# Introduction
+
+In this notebook we consider couple of examples of cleaning data by 
+(repeatedly) selecting data around regression quantiles.
+
+
+
+# Deleting noisy signals from a plot manually and then export the best remaining signal
+
+Data and cleaning approach taken from the Mathematica Stackexchange discussion:
+
+["Deleting noisy signals from a plot manually and then export the best remaining signal"](https://mathematica.stackexchange.com/questions/188361/deleting-noisy-data-from-a-plot-manually-and-export-the-best-remaining-data).
+
+```{r}
+df <- read.csv("~/MathFiles/Questions/MSE-q188361.txt", header = FALSE, as.is = TRUE )
+dim(df)
+df <- df[complete.cases(df[,1:4]), 1:4]
+df <- Reduce( function(a,i) { a[,i] <- as.numeric(a[,i]); a }, init = df, x = 1:ncol(df) )
+dim(df)
+summary(df)
+```
+
+```{r}
+df2 <- 
+  purrr::map_df( 1:ncol(df), 
+              function(i) {
+                data.frame( Regressor = 1:nrow(df), Value = df[,i])
+              })
+```
+
+```{r}
+df2
+```
+
+```{r, results='asis'}
+obj <- QRMonUnit(df) %>% QRMonEchoDataSummary()
+```
+
+
+```{r}
+obj2 <-
+  QRMonUnit( df2) %>% 
+  QRMonQuantileRegression(18, probabilities = 0.3) %>% 
+  QRMonPlot
+```
+
+```{r, collapse=T}
+res <-
+  Reduce( 
+    function(df, par) {
+      cleanData <-
+        QRMonUnit(df) %>% 
+        QRMonEchoDataSummary() %>% 
+        QRMonQuantileRegression( df = 30, probabilities = par$QuantileFraction, degree = 3 ) %>% 
+        QRMonPlot(echoQ = T) %>% 
+        QRMonErrors( relativeErrorsQ = FALSE ) %>% 
+        QRMonEchoFunctionValue( function(x) map(x, summary) ) %>% 
+        QRMonErrorsPlot( relativeErrorsQ = FALSE ) %>% 
+        QRMonPickPathPoints( par$Threshold ) %>% 
+        QRMonTakeValue()
+      cleanData <- cleanData[[1]]
+      print(ggplot(cleanData) + geom_point( aes( x = Regressor, y = Value ) ))
+      cleanData
+    },
+    init = df2,
+    x = list( list( QuantileFraction = 0.3, Threshold = 0.1 ), list( QuantileFraction = 0.5, Threshold = 0.025 ) ))
+```
+
+# Electrical measurements data
+
+Here we repeat the procedure with another dataset from the MSE question 
+["Remove periodic data variation from experimental data"](https://mathematica.stackexchange.com/q/194782/34008).
+
+```{r}
+data <- read.csv( "~/MathFiles/Questions/qMSE-194782-Iamorph.txt", sep = "\t", header = F)
+summary(data)
+```
+
+```{r, collapse=T}
+res <-
+  Reduce( 
+    function(df, par) {
+      cleanData <-
+        QRMonUnit(df) %>% 
+        QRMonEchoDataSummary() %>% 
+        QRMonQuantileRegression( df = par$Knots, probabilities = par$QuantileFraction, degree = 3 ) %>% 
+        QRMonPlot(echoQ = T) %>% 
+        QRMonErrors( relativeErrorsQ = FALSE ) %>% 
+        QRMonEchoFunctionValue( function(x) map(x, summary) ) %>% 
+        QRMonErrorsPlot( relativeErrorsQ = FALSE ) %>% 
+        QRMonPickPathPoints( par$Threshold ) %>% 
+        QRMonTakeValue()
+      cleanData <- cleanData[[1]]
+      print(ggplot(cleanData) + geom_point( aes( x = Regressor, y = Value ) ))
+      cleanData
+    },
+    init = data,
+    x = list( list( Knots = 30, QuantileFraction = 0.5, Threshold = 0.5 ), list( Knots = 50, QuantileFraction = 0.5, Threshold = 0.25 ) ))
+```
+
+
+```{r}
+lattice::xyplot( Value ~ Regressor, res, type = c("g","p"), cex = 0.05 )
+```
+
