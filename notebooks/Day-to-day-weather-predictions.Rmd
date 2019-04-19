@@ -34,18 +34,19 @@ qrTempObj <-
 qrTempObj <- qrTempObj %>% QRMonPlot
 ```
 
-Here is an example of a prediction for tomorrow's temperature given that the temperature today is \[18^{\circ}C\].
+Here is an example of a prediction for tomorrow's temperature given that the temperature today is \[8^{\circ}C\].
 
 ```{r}
-res <- qrTempObj %>% QRMonPredict( newdata = c(23) ) %>% QRMonTakeValue
+res <- qrTempObj %>% QRMonPredict( newdata = c(8) ) %>% QRMonTakeValue
 res <- setNames( dplyr::bind_rows( res, .id = "Quantile" ), c("Quantile", "TodayTemperature", "TomorrowTemperture") )
 res$Quantile <- as.numeric(res$Quantile)
 res
 ```
 
 ```{r}
-qrTempObj2 <- qrTempObj %>% QRMonConditionalCDFPlot(28, echoQ = F)
+qrTempObj2 <- qrTempObj %>% QRMonConditionalCDFPlot(8, echoQ = F)
 (qrTempObj2 %>% QRMonTakeValue) +
-  ggplot2::geom_vline( xintercept = 28, color = "lightblue" )
+  ggplot2::geom_vline( xintercept = 8, color = "blue" )
 ```
+
 
