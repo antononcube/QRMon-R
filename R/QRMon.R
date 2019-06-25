@@ -935,7 +935,7 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' @param regressorValues Regressor points to compute CDF's upon.
 #' @param valueGridPoints Grid points to use for the value(response) variable.
 #' If NULL the grid points are derived from response variable's range in the data.
-#' @param dateOrigin Date origin if the regressor conversiont to time-date.
+#' @param dateOrigin Date origin if the regressor conversion to time-date.
 #' If NULL no conversion is done.
 #' Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param quantileGridLinesQ Should the quantiles be indicated with vertical grid lines or not?
@@ -1176,7 +1176,7 @@ QRMonSeparateToFractions <- function( qrObj, data = NULL, cumulativeQ = TRUE ) {
 
 RandomPoint <- function(df){
   df <- df[ order(df$RegressionCurve), ]
-  ind <- sample.int( nrow(df) - 1, 1 )
+  ind <- sample.int( n = nrow(df) - 1, size = 1, prob = diff(df$RegressionCurve) )
   runif( min = df$Value[ind], max = df$Value[ind+1], n = 1 )
 }
 
@@ -1184,17 +1184,42 @@ RandomPoint <- function(df){
 #' @description Simulate data points based on regression quantiles.
 #' @param qrObj An QRMon object.
 #' @param n Number of simulated points.
+#' Ignored if \code{points} is not NULL.
+#' @param points A numerical vector of regressor points.
+#' If NULL \code{n} is used.
 #' @return A QRMon object.
-#' @details The data frame with the simulated points are assigned to \code{qrObj$Value}.
+#' @details At each simulation regressor point:
+#' (1) the corresponding regression quantiles values are found;
+#' (2) then a interval of two regression probabilities is randomly picked;
+#' (3) random point is generated between interval's quantiles.
+#' Uniform distribution is used for the random point generation.
+#' The obtained data frame with the simulated points is
+#' assigned to \code{qrObj$Value}.
 #' @export
-QRMonSimulate <- function( qrObj, n = 100 ) {
+QRMonSimulate <- function( qrObj, n = 100, points = NULL ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   df <- qrObj %>% QRMonTakeData()
-  simPoints <- seq( min(df$Regressor), max(df$Regressor), ( max(df$Regressor) - min(df$Regressor) ) / (n-1) )
 
-  qrObj <- qrObj %>% QRMonPredict( simPoints )
+  if( ! ( is.null(n) || is.numeric(n) ) ) {
+    warning( "The argument n is expected to be a number.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( ! ( is.null(points) || is.numeric(points) ) ) {
+    warning( "The argument points is expected to be a numeric vector or NULL.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  ## We need to have some value for n in case both n and points are NULL.
+  if( is.null(n) ) { n <- 100 }
+
+  if( is.null(points) ) {
+    points <- seq( min(df$Regressor), max(df$Regressor), ( max(df$Regressor) - min(df$Regressor) ) / (n-1) )
+  }
+
+  qrObj <- qrObj %>% QRMonPredict( points )
   simVals <- qrObj %>% QRMonTakeValue()
 
   simDF <-

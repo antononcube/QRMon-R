@@ -15,7 +15,7 @@ QRMonConditionalCDFPlot(qrObj, regressorValues, valueGridPoints = NULL,
 \item{valueGridPoints}{Grid points to use for the value(response) variable.
 If NULL the grid points are derived from response variable's range in the data.}
 
-\item{dateOrigin}{Date origin if the regressor conversiont to time-date.
+\item{dateOrigin}{Date origin if the regressor conversion to time-date.
 If NULL no conversion is done.
 Same as the argument \code{origin} of \code{as.POSIXct}.}
 
