@@ -27,6 +27,8 @@ pipelineLevels <-
                     "QRMonErrors()",
                     "QRMonErrors",
                     "QRMonOutliers()",
+                    "QRMonSimulate()",
+                    "QRMonSimulate(100, method = 'CDF')",
                     "QRMonPickPathPoints(0.2)",
                     "QRMonConditionalCDF( 0 )" )
   )
@@ -43,5 +45,6 @@ qrMonRes <- purrr::map( randomPipelines, purrr::safely(eval))
 checkRes <- purrr::map_lgl( qrMonRes, function(x) is.na(x$result) || is.list(x$result) && class(x$result) == "QRMon" )
 
 test_that( "Random pipelines produce NA's or QRMon S3 objects.", {
+  expect_true( sum(is.na(checkRes)) == 0 )
   expect_true( sum(is.na(checkRes)) == 0 && mean(checkRes) == 1 )
 })
