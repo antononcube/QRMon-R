@@ -1240,6 +1240,13 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
     purrr::map_df( names(simVals),
                    function(x) cbind( RegressionCurve = as.numeric(x), simVals[[x]], stringsAsFactors = FALSE ) )
 
+  regCurves <- sort( unique( simDF$RegressionCurve ) )
+
+  if( length(regCurves) < 2 ) {
+    warning( "More than one regression quantiles are expected.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
   ## Simulation
   if( tolower(method) %in% tolower(c("ConditionalCDF", "RegressionQuantiles")) ) {
 
@@ -1250,9 +1257,8 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
 
   } else if( tolower(method) %in% tolower(c("CDF", "Simple", "EmpiricalCDF", "Quantiles")) ) {
 
-    nms <- sort( unique( simDF$RegressionCurve ) )
-    df <- quantile( data$Value, nms )
-    df <- data.frame( RegressionCurve = nms, Value = df )
+    df <- quantile( data$Value, regCurves )
+    df <- data.frame( RegressionCurve = regCurves, Value = df )
 
     simResDF <- data.frame( Regressor = points,
                             Value = purrr::map_dbl( points, function(x) RandomPoint(df) ) )
