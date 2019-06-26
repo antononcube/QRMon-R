@@ -4,7 +4,8 @@
 \alias{QRMonSimulate}
 \title{Simulate data points.}
 \usage{
-QRMonSimulate(qrObj, n = 100, points = NULL)
+QRMonSimulate(qrObj, n = 100, points = NULL,
+  method = "ConditionalCDF")
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -14,6 +15,9 @@ Ignored if \code{points} is not NULL.}
 
 \item{points}{A numerical vector of regressor points.
 If NULL \code{n} is used.}
+
+\item{method}{A method specification string.
+One of "CDF" or "ConditionalCDF".}
 }
 \value{
 A QRMon object.
@@ -22,10 +26,15 @@ A QRMon object.
 Simulate data points based on regression quantiles.
 }
 \details{
-At each simulation regressor point:
+If \code{method = "ConditionalCDF"} then
+at each simulation regressor point:
 (1) the corresponding regression quantiles values are found;
-(2) then a interval of two regression probabilities is randomly picked;
-(3) random point is generated between interval's quantiles.
+(2) then an interval of two regression probabilities is randomly picked;
+(3) a random point is generated between interval's (conditional) quantiles.
+If \code{method = "CDF"} then
+(1) the quantiles of the values are found using the regression probabilities;
+(2) for each simulation point an interval of two regression probabilities is randomly picked;
+(3) a random point is generated between interval's quantiles.
 Uniform distribution is used for the random point generation.
 The obtained data frame with the simulated points is
 assigned to \code{qrObj$Value}.

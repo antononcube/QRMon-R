@@ -1187,20 +1187,27 @@ RandomPoint <- function(df){
 #' Ignored if \code{points} is not NULL.
 #' @param points A numerical vector of regressor points.
 #' If NULL \code{n} is used.
+#' @param method A method specification string.
+#' One of "CDF" or "ConditionalCDF".
 #' @return A QRMon object.
-#' @details At each simulation regressor point:
+#' @details If \code{method = "ConditionalCDF"} then
+#' at each simulation regressor point:
 #' (1) the corresponding regression quantiles values are found;
-#' (2) then a interval of two regression probabilities is randomly picked;
-#' (3) random point is generated between interval's quantiles.
+#' (2) then an interval of two regression probabilities is randomly picked;
+#' (3) a random point is generated between interval's (conditional) quantiles.
+#' If \code{method = "CDF"} then
+#' (1) the quantiles of the values are found using the regression probabilities;
+#' (2) for each simulation point an interval of two regression probabilities is randomly picked;
+#' (3) a random point is generated between interval's quantiles.
 #' Uniform distribution is used for the random point generation.
 #' The obtained data frame with the simulated points is
 #' assigned to \code{qrObj$Value}.
 #' @export
-QRMonSimulate <- function( qrObj, n = 100, points = NULL ) {
+QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalCDF" ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  df <- qrObj %>% QRMonTakeData()
+  data <- qrObj %>% QRMonTakeData()
 
   if( ! ( is.null(n) || is.numeric(n) ) ) {
     warning( "The argument n is expected to be a number.", call. = TRUE )
@@ -1212,12 +1219,19 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL ) {
     return(QRMonFailureSymbol)
   }
 
+  if( ! ( is.character(method) && length(method) == 1 ) ) {
+    warning( "The argument method should be one of 'CDF', 'ConditionalCDF'.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
   ## We need to have some value for n in case both n and points are NULL.
   if( is.null(n) ) { n <- 100 }
 
   if( is.null(points) ) {
-    points <- seq( min(df$Regressor), max(df$Regressor), ( max(df$Regressor) - min(df$Regressor) ) / (n-1) )
+    points <- seq( min(data$Regressor), max(data$Regressor), ( max(data$Regressor) - min(data$Regressor) ) / (n-1) )
   }
+
+  points <- sort(points)
 
   qrObj <- qrObj %>% QRMonPredict( points )
   simVals <- qrObj %>% QRMonTakeValue()
@@ -1226,10 +1240,30 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL ) {
     purrr::map_df( names(simVals),
                    function(x) cbind( RegressionCurve = as.numeric(x), simVals[[x]], stringsAsFactors = FALSE ) )
 
-  simResDF <-
-    simDF %>%
-    dplyr::group_by( Regressor ) %>%
-    dplyr::do( data.frame( Value = RandomPoint(.) ))
+  ## Simulation
+  if( tolower(method) %in% tolower(c("ConditionalCDF", "RegressionQuantiles")) ) {
+
+    simResDF <-
+      simDF %>%
+      dplyr::group_by( Regressor ) %>%
+      dplyr::do( data.frame( Value = RandomPoint(.) ))
+
+  } else if( tolower(method) %in% tolower(c("CDF", "Simple", "EmpiricalCDF", "Quantiles")) ) {
+
+    nms <- sort( unique( simDF$RegressionCurve ) )
+    df <- quantile( data$Value, nms )
+    df <- data.frame( RegressionCurve = nms, Value = df )
+
+    simResDF <- data.frame( Regressor = points,
+                            Value = purrr::map_dbl( points, function(x) RandomPoint(df) ) )
+
+  } else {
+
+    warning( "The argument method should be one of 'CDF', 'ConditionalCDF'.", call. = TRUE )
+    return(QRMonFailureSymbol)
+
+  }
+
 
   qrObj$Value <- simResDF
 
