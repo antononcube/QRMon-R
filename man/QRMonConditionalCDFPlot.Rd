@@ -23,7 +23,7 @@ Same as the argument \code{origin} of \code{as.POSIXct}.}
 
 \item{echoQ}{To echo the plot the or not?}
 
-\item{...}{Arguments for \link{\code{ggplot2::facet_wrap}}.
+\item{...}{Arguments for \code{\link{ggplot2::facet_wrap}}.
 (In order to plot additional vertical lines.)}
 }
 \value{
@@ -33,7 +33,7 @@ A QRMon object.
 Computes conditional CDF's for given regressor points and makes corresponding plots.
 }
 \details{
-This function uses \link{\code{QRMonConditionalCDF}}.
+This function uses \code{\link{QRMonConditionalCDF}}.
 }
 \seealso{
 Other Distribution functions: \code{\link{CDFApproximation}},

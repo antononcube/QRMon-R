@@ -940,10 +940,10 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 #' Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param quantileGridLinesQ Should the quantiles be indicated with vertical grid lines or not?
 #' @param echoQ To echo the plot the or not?
-#' @param ... Arguments for \link{\code{ggplot2::facet_wrap}}.
+#' @param ... Arguments for \code{\link{ggplot2::facet_wrap}}.
 #' (In order to plot additional vertical lines.)
 #' @return A QRMon object.
-#' @details This function uses \link{\code{QRMonConditionalCDF}}.
+#' @details This function uses \code{\link{QRMonConditionalCDF}}.
 #' @family Distribution functions
 #' @export
 QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = NULL,
