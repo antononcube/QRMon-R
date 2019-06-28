@@ -1180,6 +1180,30 @@ RandomPoint <- function(df){
   runif( min = df$Value[ind], max = df$Value[ind+1], n = 1 )
 }
 
+#' Random points generation for a CDF.
+#' @description Generates a vector of random points using a CDF data frame.
+#' @param cdf A data frame with numeric columns "Probability" and "Quantile".
+#' @param n Number of points.
+#' @param randomFunction A function to generate a random point between the quantiles.
+#' (It rarely makes sense to be different than \code{runif}.)
+#' @return A numeric vector
+#' @export
+CDFRandomPoints <- function( cdf, n = 1, randomFunction = runif ) {
+
+  if( !( is.data.frame(cdf) && sum( names(cdf) %in% c("Probability", "Quantile") ) == 2 ) ) {
+    stop( "The argument cdf is expected to be a data frame with columns \"Probability\" and \"Quantile\".", call. = TRUE )
+  }
+
+  if( !( is.numeric( cdf$Probability) && is.numeric( cdf$Quantile ) ) ) {
+    stop( "The columns of the argument cdf are expected to be numeric.", call. = TRUE )
+  }
+
+  cdf<- cdf[ order(cdf$Probability), ]
+  ind <- sample.int( n = nrow(cdf) - 1, size = n, prob = diff(cdf$Probability), replace = TRUE )
+  runif( min = cdf$Quantile[ind], max = cdf$Quantile[ind+1], n = n )
+
+}
+
 #' Simulate data points.
 #' @description Simulate data points based on regression quantiles.
 #' @param qrObj An QRMon object.
@@ -1231,7 +1255,8 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
     points <- seq( min(data$Regressor), max(data$Regressor), ( max(data$Regressor) - min(data$Regressor) ) / (n-1) )
   }
 
-  points <- sort(points)
+  # This should not be done.
+  # points <- sort(points)
 
   qrObj <- qrObj %>% QRMonPredict( points )
   simVals <- qrObj %>% QRMonTakeValue()
@@ -1257,11 +1282,11 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
 
   } else if( tolower(method) %in% tolower(c("CDF", "Simple", "EmpiricalCDF", "Quantiles")) ) {
 
-    df <- quantile( data$Value, regCurves )
-    df <- data.frame( RegressionCurve = regCurves, Value = df )
+    df <- quantile( x = data$Value, probs = regCurves )
+    df <- data.frame( Probability = regCurves, Quantile = df )
 
     simResDF <- data.frame( Regressor = points,
-                            Value = purrr::map_dbl( points, function(x) RandomPoint(df) ) )
+                            Value = CDFRandomPoints( cdf = df, n = length(points) ) )
 
   } else {
 
