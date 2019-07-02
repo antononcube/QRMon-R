@@ -208,7 +208,7 @@ QRMonTakeRegressionObjects <- function( qrObj, functionName = "QRMonTakeRegressi
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  if( !QRMonDataCheck( qrObj, functionName = functionName,  logicalResult = TRUE) ) {
+  if( !QRMonMemberPresenceCheck( qrObj, memberName = "RegressionObjects", functionName = functionName,logicalResult = TRUE) ) {
     return(QRMonFailureSymbol)
   }
   qrObj$RegressionObjects
@@ -392,8 +392,14 @@ QRMonRescale <- function( qrObj, regressorAxisQ = TRUE, valueAxisQ = FALSE ) {
 #' @description Finds the quantile regression objects for the specified
 #' quantile probabilities using a B-spline basis.
 #' @param qrObj An QRMon object.
+#' @param df Degrees of freedom;
+#' same as \code{df} of \code{\link{splines::bs}}.
+#' @param knots The internal breakpoints that define the spline;
+#' same as \code{knots} of \code{\link{splines::bs}}.
+#' @param degree  Degree of the piecewise polynomial;
+#' same as \code{degree} of \code{\link{splines::bs}}.
 #' @param probabilities A numeric vector with quantile probabilities.
-#' @param ... parameters for \code{\link{splines::bs}}.
+#' @param ... Additional arguments for \code{\link{splines::bs}}.
 #' @return A QRMon object.
 #' @details The obtained regression objects are assigned/appended to the
 #' \code{qrObj$RegressionObjects}.
@@ -402,9 +408,14 @@ QRMonRescale <- function( qrObj, regressorAxisQ = TRUE, valueAxisQ = FALSE ) {
 #' \code{\link{QRMonQuantileRegressionFit}}.
 #' @family Regression functions
 #' @export
-QRMonQuantileRegression <- function( qrObj, probabilities = c(0.25, 0.5, 0.75), ... ) {
+QRMonQuantileRegression <- function( qrObj, df, knots = NULL, degree = 3, probabilities = c(0.25, 0.5, 0.75), ... ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  if( !( is.numeric(probabilities) && mean( probabilities >= 0 ) == 1 && mean( probabilities <= 1) == 1 ) ){
+    warning("The argument probabilities is expected to be a numeric vector with elements between 0 and 1.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
 
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegression" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
@@ -412,7 +423,7 @@ QRMonQuantileRegression <- function( qrObj, probabilities = c(0.25, 0.5, 0.75), 
   rqFits <-
     purrr::map(
       probabilities,
-      function(tau) { quantreg::rq(Value ~ splines::bs(Regressor, ...), tau = tau, data = data ) })
+      function(tau) { quantreg::rq(Value ~ splines::bs(Regressor, df = df, knots = knots, degree = degree, ...), tau = tau, data = data ) })
   names(rqFits) <- probabilities
 
   qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
@@ -552,12 +563,18 @@ QRMonPlot <- function( qrObj,
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  qrObj <- qrObj %>% QRMonPredict( newdata = NULL )
-  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+  if(  !is.null( qrObj$RegressionsFunctions ) ) {
 
-  qrDF <- qrObj %>% QRMonTakeValue()
+    qrObj <- qrObj %>% QRMonPredict( newdata = NULL )
+    if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  qrDF <- purrr::map_df(names(qrDF), function(x) cbind( RegressionCurve = x, qrDF[[x]], stringsAsFactors = FALSE ) )
+    qrDF <- qrObj %>% QRMonTakeValue()
+
+    qrDF <- purrr::map_df(names(qrDF), function(x) cbind( RegressionCurve = x, qrDF[[x]], stringsAsFactors = FALSE ) )
+
+  } else {
+    qrDF <- NULL
+  }
 
   resPlot <- ggplot2::ggplot()
 
@@ -565,7 +582,9 @@ QRMonPlot <- function( qrObj,
 
   if( datePlotQ ) {
     data$Regressor <- as.POSIXct( data$Regressor, origin = dateOrigin )
-    qrDF$Regressor <- as.POSIXct( qrDF$Regressor, origin = dateOrigin )
+    if( !is.null(qrDF) ) {
+      qrDF$Regressor <- as.POSIXct( qrDF$Regressor, origin = dateOrigin )
+    }
   }
 
   if( !is.null(dataPointsColor) ) {
@@ -576,7 +595,8 @@ QRMonPlot <- function( qrObj,
                            mapping = ggplot2::aes( x = Regressor, y = Value ), color = dataPointsColor )
   }
 
-  if( !is.null(regressionCurvesColor) ) {
+  if( !is.null(regressionCurvesColor) && !is.null(qrDF) ) {
+
     resPlot <-
       resPlot +
       if( is.character(regressionCurvesColor) ) {
@@ -925,6 +945,7 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
   qrObj
 }
 
+
 ##===========================================================
 ## Conditional CDF plot
 ##===========================================================
@@ -1255,10 +1276,12 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
     points <- seq( min(data$Regressor), max(data$Regressor), ( max(data$Regressor) - min(data$Regressor) ) / (n-1) )
   }
 
-  # This should not be done.
+  # This should not be done:
   # points <- sort(points)
 
   qrObj <- qrObj %>% QRMonPredict( points )
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
   simVals <- qrObj %>% QRMonTakeValue()
 
   simDF <-

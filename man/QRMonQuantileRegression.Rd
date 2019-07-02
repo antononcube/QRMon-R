@@ -4,14 +4,24 @@
 \alias{QRMonQuantileRegression}
 \title{Quantile regression B-splines basis fit.}
 \usage{
-QRMonQuantileRegression(qrObj, probabilities = c(0.25, 0.5, 0.75), ...)
+QRMonQuantileRegression(qrObj, df, knots = NULL, degree = 3,
+  probabilities = c(0.25, 0.5, 0.75), ...)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
+\item{df}{Degrees of freedom;
+same as \code{df} of \code{\link{splines::bs}}.}
+
+\item{knots}{The internal breakpoints that define the spline;
+same as \code{knots} of \code{\link{splines::bs}}.}
+
+\item{degree}{Degree of the piecewise polynomial;
+same as \code{degree} of \code{\link{splines::bs}}.}
+
 \item{probabilities}{A numeric vector with quantile probabilities.}
 
-\item{...}{parameters for \code{\link{splines::bs}}.}
+\item{...}{Additional arguments for \code{\link{splines::bs}}.}
 }
 \value{
 A QRMon object.
