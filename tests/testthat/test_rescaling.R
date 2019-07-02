@@ -2,18 +2,18 @@ context("Data rescaling")
 library(QRMon)
 
 qrObj1 <-
-  QRMonUnit( dfTemperatureData ) %>%
+  QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
   QRMonRescale
 
 qrObj2 <-
-  QRMonUnit( dfTemperatureData ) %>%
+  QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
   QRMonRescale(TRUE, TRUE)
 
 testData <- dfFinancialData
 testData[[1]] <- 12
 
 qrObj3 <-
-  QRMonUnit(  testData ) %>%
+  QRMonUnit( setNames( testData, c("Regressor", "Value") ) ) %>%
   QRMonRescale()
 
 test_that( "Rescaling produces points in [0,1].", {

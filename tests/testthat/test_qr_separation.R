@@ -7,19 +7,19 @@ library(QRMon)
 ## together with the separation implementation.
 
 qFracs0 <-
-  QRMonUnit( dfTemperatureData ) %>%
+  QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
   QRMonQuantileRegression( df = 12, degree = 3, probabilities = seq(0.2,0.8,0.2) ) %>%
   QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 qFracs1 <-
-  QRMonUnit( dfDistributionData ) %>%
+  QRMonUnit( setNames( dfDistributionData, c("Regressor", "Value") ) ) %>%
   QRMonQuantileRegression( df = 6, degree = 3, probabilities = seq(0.1,0.9,0.2) ) %>%
   QRMonSeparateToFractions() %>%
   QRMonTakeValue()
 
 qFracs2 <-
-  QRMonUnit( dfTemperatureData ) %>%
+  QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
   QRMonQuantileRegression( df = 6, degree = 3, probabilities = seq(0.2,0.8,0.2) ) %>%
   QRMonSeparateToFractions(cumulativeQ = FALSE) %>%
   QRMonTakeValue()

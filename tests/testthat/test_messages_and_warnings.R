@@ -7,12 +7,15 @@ test_that("Lift to monad messages", {
 })
 
 test_that("Quantile regresssion warnings", {
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
-                    QRMonPlot(),
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonPredict(),
                   "Calculate regression quantiles first.*" )
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
                     QRMonOutliers(),
-                  "Calculate .* regression quantiles first.*" )
+                  "Calculate \\(top and bottom\\) regression quantiles first.*" )
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonSimulate(),
+                  "Calculate regression quantiles first.*" )
 })
 
 test_that("Monad elements warnings", {

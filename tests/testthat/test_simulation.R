@@ -8,6 +8,7 @@ probsTest <- seq(0, 1, 0.2)
 qsTest <- quantile( x = CDFRandomPoints( data.frame( Probability = 0:10/10, Quantile = 0:10/10 ), 1000 ), probs = probsTest )
 
 test_that( "Simple CDF simulation of uniform data.", {
+
   expect_true(  mean( (qsTest - probsTest) < 0.01 ) == 1 )
 
 })
@@ -16,8 +17,8 @@ test_that( "Simple CDF simulation with QR.", {
 
   ## This should also be fast.
   expect_is( dfSim <-
-               QRMonUnit( setNames(dfFinancialData, c("Regressor", "Value"))) %>%
-               QRMonQuantileRegression( df = 3, probsTest ) %>%
+               QRMonUnit( setNames( dfFinancialData, c("Regressor", "Value") ) ) %>%
+               QRMonQuantileRegression( df = 3, probabilities = probsTest ) %>%
                QRMonSimulate( n = 1000, method = "CDF" ) %>%
                QRMonTakeValue(),
              "data.frame"
