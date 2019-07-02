@@ -34,6 +34,26 @@ test_that( "Simple CDF simulation with QR.", {
 
 })
 
+test_that( "Conditional CDF simulation with QR.", {
+
+  ## This should also be fast.
+  expect_is( dfSim <-
+               QRMonUnit( setNames( dfFinancialData, c("Regressor", "Value") ) ) %>%
+               QRMonQuantileRegression( df = 3, probabilities = probsTest ) %>%
+               QRMonSimulate( n = 1000, method = "ConditionalCDF" ) %>%
+               QRMonTakeValue(),
+             "data.frame"
+  )
+
+  expect_equal( names( dfSim ), c( "Regressor", "Value" ) )
+
+  expect_is( svec <- quantile( x = dfSim$Value, probs = probsTest, na.rm = T), "numeric" )
+
+  expect_is( tvec <- quantile( x = dfFinancialData$Value, probs = probsTest), "numeric" )
+
+  expect_equal( mean( abs( (svec[-1] - tvec[-1]) / tvec[-1] ) < 0.2 ), 1 )
+
+})
 
 ## More tests with QRMon objects have to be added...
 
