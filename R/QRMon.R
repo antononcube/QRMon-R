@@ -208,7 +208,7 @@ QRMonTakeRegressionObjects <- function( qrObj, functionName = "QRMonTakeRegressi
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  if( !QRMonMemberPresenceCheck( qrObj, memberName = "RegressionObjects", functionName = functionName,logicalResult = TRUE) ) {
+  if( !QRMonMemberPresenceCheck( qrObj, memberName = "RegressionObjects", functionName = functionName, logicalResult = TRUE) ) {
     return(QRMonFailureSymbol)
   }
   qrObj$RegressionObjects
@@ -280,9 +280,10 @@ QRMonDataCheck <- function( qrObj, functionName = NULL, logicalResult = FALSE ) 
 #' @param memberPrettyName A pretty member name (for messages).
 #' @param functionName The name of the delegating function.
 #' @param logicalResult Should the result be logical value?
+#' @param warningQ Should a warning be issued if the specified member is not found?
 #' @return A logical value or an QRMon object.
 #' @export
-QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memberName, functionName = "", logicalResult = FALSE ) {
+QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memberName, functionName = "", logicalResult = FALSE, warningQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -291,7 +292,9 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
   if( nchar(functionName) > 0 ) { functionName <- paste0( functionName, ":: ") }
 
   if( is.null(qrObj[[memberName]]) ) {
-    warning( paste0( functionName, paste0("Cannot find ", memberPrettyName, ".") ), call. = TRUE )
+    if( warningQ ) {
+      warning( paste0( functionName, paste0("Cannot find ", memberPrettyName, ".") ), call. = TRUE )
+    }
     res <- FALSE
   }
 
@@ -426,7 +429,18 @@ QRMonQuantileRegression <- function( qrObj, df, knots = NULL, degree = 3, probab
       function(tau) { quantreg::rq(Value ~ splines::bs(Regressor, df = df, knots = knots, degree = degree, ...), tau = tau, data = data ) })
   names(rqFits) <- probabilities
 
-  qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects(), rqFits ) )
+  if( !QRMonMemberPresenceCheck( qrObj,
+                                 memberName = "RegressionObjects",
+                                 functionName = "QRMonQuantileRegression",
+                                 logicalResult = TRUE, warningQ = FALSE ) ) {
+
+    qrObj <- qrObj %>% QRMonSetRegressionObjects( rqFits )
+
+  } else {
+
+    qrObj <- qrObj %>% QRMonSetRegressionObjects( c( qrObj %>% QRMonTakeRegressionObjects, rqFits ) )
+
+  }
 
   qrObj
 }
@@ -544,6 +558,8 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
 #' Plot with data and regression curves.
 #' @description Plot the monad object data and regression functions (if any.)
 #' @param qrObj An QRMon object.
+#' @param dataLineColor The color of the line connecting the data points.
+#' If NULL the data line is not plotted.
 #' @param dataPointsColor The color of the data points.
 #' If NULL the data points are not plotted.
 #' @param regressionCurvesColor The color of the regression curves.
@@ -553,17 +569,21 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The plot is made with \link{ggplot2}.
+#' The data points are plotted after the data line.
 #' The plot is assigned to \code{qrObj$Value}.
 #' @family Plot functions
 #' @export
 QRMonPlot <- function( qrObj,
-                       dataPointsColor = 'gray60', regressionCurvesColor = ~ RegressionCurve,
+                       dataLineColor = NULL, dataPointsColor = 'gray60',
+                       regressionCurvesColor = ~ RegressionCurve,
                        datePlotQ = FALSE, dateOrigin = "1970-01-01",
                        echoQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
-  if(  !is.null( qrObj$RegressionsFunctions ) ) {
+  lsRegObjs <- qrObj %>% QRMonTakeRegressionObjects
+
+  if( !is.null(lsRegObjs) && is.list(lsRegObjs) && length(lsRegObjs) > 0 ) {
 
     qrObj <- qrObj %>% QRMonPredict( newdata = NULL )
     if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
@@ -585,6 +605,14 @@ QRMonPlot <- function( qrObj,
     if( !is.null(qrDF) ) {
       qrDF$Regressor <- as.POSIXct( qrDF$Regressor, origin = dateOrigin )
     }
+  }
+
+  if( !is.null(dataLineColor) ) {
+
+    resPlot <-
+      resPlot +
+      ggplot2::geom_line( data = data,
+                          mapping = ggplot2::aes( x = Regressor, y = Value ), color = dataLineColor )
   }
 
   if( !is.null(dataPointsColor) ) {

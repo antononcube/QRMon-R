@@ -4,12 +4,15 @@
 \alias{QRMonPlot}
 \title{Plot with data and regression curves.}
 \usage{
-QRMonPlot(qrObj, dataPointsColor = "gray60",
+QRMonPlot(qrObj, dataLineColor = NULL, dataPointsColor = "gray60",
   regressionCurvesColor = ~RegressionCurve, datePlotQ = FALSE,
   dateOrigin = "1970-01-01", echoQ = TRUE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
+
+\item{dataLineColor}{The color of the line connecting the data points.
+If NULL the data line is not plotted.}
 
 \item{dataPointsColor}{The color of the data points.
 If NULL the data points are not plotted.}
@@ -31,6 +34,7 @@ Plot the monad object data and regression functions (if any.)
 }
 \details{
 The plot is made with \link{ggplot2}.
+The data points are plotted after the data line.
 The plot is assigned to \code{qrObj$Value}.
 }
 \concept{Plot functions}

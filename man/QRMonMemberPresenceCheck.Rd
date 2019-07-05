@@ -6,7 +6,7 @@
 \usage{
 QRMonMemberPresenceCheck(qrObj, memberName,
   memberPrettyName = memberName, functionName = "",
-  logicalResult = FALSE)
+  logicalResult = FALSE, warningQ = TRUE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -18,6 +18,8 @@ QRMonMemberPresenceCheck(qrObj, memberName,
 \item{functionName}{The name of the delegating function.}
 
 \item{logicalResult}{Should the result be logical value?}
+
+\item{warningQ}{Should a warning be issued if the specified member is not found?}
 }
 \value{
 A logical value or an QRMon object.
