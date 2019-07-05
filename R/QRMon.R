@@ -308,6 +308,26 @@ QRMonMemberPresenceCheck <- function( qrObj, memberName, memberPrettyName = memb
 ## Echo function appliction of over monad's value
 ##===========================================================
 
+#' Echo monad's value.
+#' @description Prints the "Value" element/member of the monad object.
+#' @param qrObj An QRMon object.
+#' @return A QRMon object.
+#' @details Prints \code{qrObj$Value}.
+#' @export
+QRMonEchoValue <- function( qrObj ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  print( qrObj$Value )
+
+  qrObj
+}
+
+
+##===========================================================
+## Echo function appliction of over monad's value
+##===========================================================
+
 #' Function application to monad's value.
 #' @description Apply a function to the "Value" element/member of the monad object.
 #' @param qrObj An QRMon object.
