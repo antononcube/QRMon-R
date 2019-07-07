@@ -490,6 +490,11 @@ QRMonQuantileRegressionFit <- function( qrObj, formula, probabilities = c(0.25, 
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
+  if( !( is.numeric(probabilities) && mean( probabilities >= 0 ) == 1 && mean( probabilities <= 1) == 1 ) ){
+    warning("The argument probabilities is expected to be a numeric vector with elements between 0 and 1.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonQuantileRegressionFit" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
@@ -539,12 +544,13 @@ QRMonPredict <- function( qrObj, newdata = NULL, ... ) {
     return(QRMonFailureSymbol)
   }
 
-  if( is.vector(newdata) ) {
+  if( is.vector(newdata) && is.numeric(newdata) ) {
     newdata <- data.frame( Regressor = newdata )
   }
 
-  if( ! ( is.null(newdata) || is.data.frame(newdata) && sum( "Regressor" %in% colnames(newdata) ) == 1 ) ) {
-    warning( "A numeric vector, data frame with a column 'Regressor', or NULL is expected for the argument newdata.", call. = TRUE )
+  if( ! ( is.null(newdata) ||
+          is.data.frame(newdata) && ("Regressor" %in% colnames(newdata)) && is.numeric(newdata$Regressor) ) ) {
+    warning( "The argument newdata is expected to be a numeric vector, a data frame with a column 'Regressor', or NULL.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
@@ -972,6 +978,11 @@ QRMonConditionalCDF <- function( qrObj, regressorValues ) {
 
   regObjs <- QRMonTakeRegressionObjects( qrObj = qrObj, functionName = "QRMonConditionalCDF" )
   if( length(regObjs) == 0 || QRMonFailureQ(regObjs) ) { return(QRMonFailureSymbol) }
+
+  if( length(regObjs) < 2 ) {
+    warning( "At least two regression quantiles are needed.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
 
   if( !is.numeric(regressorValues) ) {
     warning( "The argument regressorValues is expected to be a numeric vector.", call. = TRUE )
