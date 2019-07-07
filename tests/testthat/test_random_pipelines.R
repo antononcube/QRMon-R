@@ -2,7 +2,7 @@ context("Random pipelines")
 library(QRMon)
 
 set.seed(5427)
-numberOfPipelines <- 20
+numberOfPipelines <- 40
 
 pipelineLevels <-
   list( level1 = c( "QRMonUnit()",
@@ -16,7 +16,7 @@ pipelineLevels <-
                     "QRMonEchoDataSummary",
                     "QRMonEchoDataSummary()" ),
 
-        level3 = c( "QRMonQuantileRegression",
+        level3 = c( "QRMonQuantileRegression( 6 )",
                     "QRMonQuantileRegression( df = 6, degree = 7, probabilities = 0.5)",
                     "QRMonQuantileRegression( df = 12, probabilities = c(0.1,0.9))",
                     "QRMonQuantileRegression( df = 12, probabilities = 1:5/6)",
@@ -27,10 +27,15 @@ pipelineLevels <-
                     "QRMonErrors()",
                     "QRMonErrors",
                     "QRMonOutliers()",
+                    "QRMonSeparate()",
                     "QRMonSimulate()",
-                    "QRMonSimulate(100, method = 'CDF')",
-                    "QRMonPickPathPoints(0.2)",
-                    "QRMonConditionalCDF( 0 )" )
+                    "QRMonSimulate( n = 100, method = 'CDF' )",
+                    "QRMonPickPathPoints( 0.2 )",
+                    "QRMonConditionalCDF( 0 )",
+                    "QRMonPlot( echoQ = FALSE )",
+                    "QRMonOutliersPlot( echoQ = FALSE )",
+                    "QRMonErrorsPlot( echoQ = FALSE )",
+                    "QRMonConditionalCDFPlot( 0, echoQ = FALSE)")
   )
 
 randomPipelines <-
