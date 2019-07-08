@@ -33,7 +33,9 @@ pipelineLevels <-
                     "QRMonPickPathPoints( 0.2 )",
                     "QRMonConditionalCDF( 0 )",
                     "QRMonPlot( echoQ = FALSE )",
-                    "QRMonOutliersPlot( echoQ = FALSE )",
+                    "QRMonPlot( datePlotQ = TRUE, echoQ = FALSE )",
+                    "QRMonOutliersPlot( datePlotQ  = TRUE, echoQ = FALSE )",
+                    "QRMonOutliersPlot( datePlotQ  = TRUE, echoQ = FALSE )",
                     "QRMonErrorsPlot( echoQ = FALSE )",
                     "QRMonConditionalCDFPlot( 0, echoQ = FALSE)")
   )
