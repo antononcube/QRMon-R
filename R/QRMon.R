@@ -142,14 +142,27 @@ QRMonSetData <- function( qrObj, data ) {
       data$Regressor <- as.numeric(data$Regressor, "second")
     }
 
+    data <- data[, expectedColNames]
+
+    data <- data[ complete.cases(data), ]
+
+    if( sum( is.infinite( data$Regressor ) | is.infinite( data$Value ) ) > 0 ) {
+      warning("The data has infinite values; proceeding by removing them.", call. = TRUE )
+
+      data <- data[ !( is.infinite( data$Regressor ) | is.infinite( data$Value ) ), ]
+    }
+
+    if( nrow(data) == 0 || is.null(data) ) {
+      warning("All data points have missing data of infinte values.", call. = TRUE )
+      return(QRMonFailureSymbol)
+    }
+
     if( !is.numeric(data$Regressor) || !is.numeric(data$Value) ) {
       warning( "The columns 'Regressor' and 'Value' of the argument data are expected to be numeric.", call. = TRUE)
       return(QRMonFailureSymbol)
     }
 
-    qrObj$Data <- data[, expectedColNames]
-
-    qrObj$Data <- qrObj$Data[ complete.cases(qrObj$Data), ]
+    qrObj$Data <- data
 
     qrObj
   }
@@ -1312,6 +1325,7 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
   data <- qrObj %>% QRMonTakeData()
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
   if( ! ( is.null(n) || is.numeric(n) ) ) {
     warning( "The argument n is expected to be a number.", call. = TRUE )
