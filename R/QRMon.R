@@ -42,6 +42,26 @@ QRMonFailureSymbol <- NA
 #' @export
 QRMonFailureQ <- function(x) { mean(is.na(x)) }
 
+##===========================================================
+## Failure function
+##===========================================================
+
+#' Failure producing function
+#' @description Puts the monad object into a monadic failure.
+#' @param msObj An QRMon object.
+#' @param message A message to echoed. If NULL no message is echoed.
+#' @return A QRMon object.
+#' @export
+QRMonFailure <- function( msObj, message = NULL ) {
+
+  if( QRMonFailureQ(msObj) ) { return(QRMonFailureSymbol) }
+
+  if( is.character(message) ) {
+    warning( message, call. = FALSE )
+  }
+
+  QRMonFailureSymbol
+}
 
 ##===========================================================
 ## QRMon Unit
