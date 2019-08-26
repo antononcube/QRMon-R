@@ -162,20 +162,100 @@ ggplot( (qrmon %>% QRMonTakeValue())[[1]] ) +
 
 ```{r}
 qrmon <-
-  QRMonUnit( dfTemperatureData ) %>% 
+  QRMonUnit( dfTemperatureData  ) %>% 
   QRMonEchoDataSummary() %>% 
-  QRMonSetRegressionObjects(NULL) %>% 
-  QRMonQuantileRegression( df = 16, probabilities = c(0.01, 1:7/8, 0.99) ) %>% 
-  QRMonPlot(dataPointsColor = "gray70")
+  QRMonSetRegressionObjects( NULL ) %>% 
+  QRMonQuantileRegression( df = 16, probabilities = c(0, 0.02, 1:5/6, 0.98, 1) ) %>%
+  QRMonPlot( datePlotQ = TRUE, dateOrigin = "1900-01-01", dataPointsColor = "gray80") %>% 
+  QRMonTakeValue
 ```
 
 ```{r}
-qrmon <- qrmon %>% QRMonSimulate(1000)
+#qrmon <- qrmon %>% QRMonSimulate( points = qrmon %>% QRMonTakeData %>% dplyr::pull(Regressor) )
+qrmon <- qrmon %>% QRMonSimulate( 1000 )
 qDF <- rbind( cbind( Type = "Original", qrmon %>% QRMonTakeData() ),
               cbind( Type = "Simulated", as.data.frame( qrmon %>% QRMonTakeValue() )))
 ggplot( qDF ) +
   geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
   facet_wrap( ~Type, ncol=1)
+```
+
+# 1D simulation emulation with QR example
+
+We cannot do a good emulation of the 1D simulation because `quantreg` does not allow 
+using interpolation order 0.
+
+```{r}
+probs <- c(0,0.01,1:9/10,0.99,1)
+```
+
+```{r}
+qrmon2 <-
+  QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value" )) ) %>% 
+  QRMonQuantileRegression( df = 1, degree = 1, probabilities = probs ) %>% 
+  QRMonPlot
+```
+
+```{r}
+qrmon2 <- qrmon2 %>% QRMonSimulate( 1000 )
+qDF <- rbind( cbind( Type = "Original", qrmon2 %>% QRMonTakeData() ),
+              cbind( Type = "Simulated", as.data.frame( qrmon2 %>% QRMonTakeValue() )))
+ggplot( qDF ) +
+  geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
+  facet_wrap( ~Type, ncol=1)
+```
+
+## Quantiles check
+
+```{r}
+quantile( qrmon %>% QRMonTakeData %>% dplyr::pull(Value), probs = probs )
+```
+
+```{r}
+quantile( qrmon2 %>% QRMonTakeValue %>% dplyr::pull(Value), probs = probs )
+```
+
+# 1D simulation
+
+```{r}
+probs <- c(0,0.01,1:9/10,0.99,1)
+```
+
+```{r}
+qrmon2 <-
+  QRMonUnit( setNames(dfTemperatureData, c("Regressor", "Value" )) ) %>% 
+  QRMonQuantileRegression( df = 1, degree = 1, probabilities = probs ) %>% 
+  QRMonPlot(datePlotQ = T, dateOrigin = "1900-01-01", echoQ = F) %>% 
+  QRMonEchoFunctionValue( function(x) x + theme_black() )
+```
+
+
+```{r}
+qrmon2 <- qrmon2 %>% QRMonSimulate( 1000, method = "CDF" )
+qDF <- rbind( cbind( Type = "Original", qrmon2 %>% QRMonTakeData() ),
+              cbind( Type = "Simulated", as.data.frame( qrmon2 %>% QRMonTakeValue() )))
+ggplot( qDF ) +
+  geom_line( aes( x = Regressor, y = Value ), color = "lightblue" ) +
+  facet_wrap( ~Type, ncol=1) +
+  theme_black()
+```
+
+
+```{r}
+QRMonUnit( dfFinancialData ) %>% 
+  QRMonEchoDataSummary() %>% 
+  QRMonQuantileRegression( df = 8, degree = 2, probabilities = 0.5) %>% 
+  QRMonSimulate(100, method = 'ConditionalCDF')
+```
+
+## Quantiles check
+
+```{r}
+quantile( qrmon %>% QRMonTakeData %>% dplyr::pull(Value), probs = probs )
+```
+
+```{r}
+quantile( qrmon2 %>% QRMonTakeValue %>% dplyr::pull(Value), probs = probs )
 ```
 
 # Using formulas
@@ -190,4 +270,5 @@ qrMon <-
 ```{r}
 qrMon %>% QRMonPredict( c(0, 0.5, 2) ) %>% QRMonTakeValue
 ```
+
 
