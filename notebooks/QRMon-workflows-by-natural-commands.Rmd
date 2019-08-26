@@ -1,0 +1,92 @@
+---
+title: "QRMon workflows by natural commands"
+author: Anton Antonov
+date: "```r Sys.Date()```"
+output: html_notebook
+---
+
+```{r}
+library(QRMon)
+library(SparseMatrixRecommender)
+library(quantreg)
+library(magrittr)
+library(splines)
+library(ExternalParsersHookUp)
+```
+
+# Introduction
+
+This notebook demonstrates the construction of Quantile Regression workflows
+using natural language commands.
+
+# Additional definitions
+
+```{r, eval=T}
+Perl6QRMonParsingLib <- function() {
+    file.path("/", "Volumes", "Macintosh HD", "Users", "antonov", "ConversationalAgents", "Packages", "Perl6", "QuantileRegressionWorkflows", "lib")
+}
+```
+
+```{r, eval=T}
+to_QRMon_R_command <- function(command, parse=TRUE) {
+  pres <- Perl6Command( command = paste0( "say to_QRMon_R(\"", command, "\")"),
+                        moduleDirectory = Perl6QRMonParsingLib(),
+                        moduleName = "QuantileRegressionWorkflows" )
+  pres <- gsub( "\\\"", "\"", pres, fixed = T)
+  if(parse) { parse(text = pres) }
+  else { pres }
+}
+```
+
+
+# Basic pipeline
+
+Simple creation:
+
+```{r}
+qrmon <-
+  QRMonUnit( dfTemperatureData )
+```
+
+```{r}
+pipeline <- 
+  to_QRMon_R_command( 
+    "use object qrmon;
+     compute quantile regression with 12 knots;
+     show plot", parse = T )
+pipeline
+```
+
+```{r}
+eval( expr = to_QRMon_R_command( 
+    "use object qrmon;
+     compute quantile regression with knots 12 and probabilities 0.1 0.5 0.8;
+     show plot" ) )
+```
+
+```{r}
+res <- 
+  eval( expr = to_QRMon_R_command( 
+    "use object qrmon;
+     summarize data;
+     show plot" ) )
+```
+
+```{r}
+ to_QRMon_R_command( 
+    "create from dfTemperatureData;
+     compute quantile regression with 12 knots;
+     show plot", parse = F ) 
+```
+
+```{r}
+qrObj2 <-
+  eval( expr = to_QRMon_R_command( 
+    "create from dfTemperatureData;
+     summarize data;
+     rescale value axis;
+     compute quantile regression with 12 knots;
+     show plot" ) )
+```
+
+
