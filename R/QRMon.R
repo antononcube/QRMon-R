@@ -400,12 +400,36 @@ QRMonEchoDataSummary <- function( qrObj ) {
   qrObj
 }
 
+
+##===========================================================
+## DeleteMissing
+##===========================================================
+
+#' Remove missing data.
+#' @description Removes data rows with missing data fields (NA's).
+#' @param qrObj An QRMon object.
+#' @details This function is most likely reduntant.
+#' The function \code{\link{QRMonSetData}} does removal of missing data.
+#' @return A QRMon object.
+#' @export
+QRMonDeleteMissing <- function( qrObj) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonDeleteMissing" )
+  if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
+
+  qiObj %>% QRMonSetData( data = data )
+
+}
+
+
 ##===========================================================
 ## Rescale
 ##===========================================================
 
 #' Rescale data.
-#' @description Rescale the data along axes specification.
+#' @description Rescales the data along axes specification.
 #' @param qrObj An QRMon object.
 #' @param regressorAxisQ Should the data be rescaled along the regressor axis?
 #' @param valueAxisQ Should the data be rescaled along the value axis?

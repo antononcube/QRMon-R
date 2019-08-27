@@ -17,7 +17,7 @@ QRMonRescale(qrObj, regressorAxisQ = TRUE, valueAxisQ = FALSE)
 A QRMon object.
 }
 \description{
-Rescale the data along axes specification.
+Rescales the data along axes specification.
 }
 \details{
 The rescaled data replaces \code{qrObj$Data}.
