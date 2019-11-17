@@ -4,8 +4,15 @@
 \alias{QRMonConditionalCDFPlot}
 \title{Conditional CDF plot.}
 \usage{
-QRMonConditionalCDFPlot(qrObj, regressorValues, valueGridPoints = NULL,
-  dateOrigin = NULL, quantileGridLinesQ = TRUE, echoQ = TRUE, ...)
+QRMonConditionalCDFPlot(
+  qrObj,
+  regressorValues,
+  valueGridPoints = NULL,
+  dateOrigin = NULL,
+  quantileGridLinesQ = TRUE,
+  echoQ = TRUE,
+  ...
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -36,9 +43,10 @@ Computes conditional CDF's for given regressor points and makes corresponding pl
 This function uses \code{\link{QRMonConditionalCDF}}.
 }
 \seealso{
-Other Distribution functions: \code{\link{CDFApproximation}},
-  \code{\link{ExpectedValueApproximation}},
-  \code{\link{PDFApproximation}},
-  \code{\link{QRMonConditionalCDF}}
+Other Distribution functions: 
+\code{\link{CDFApproximation}()},
+\code{\link{ExpectedValueApproximation}()},
+\code{\link{PDFApproximation}()},
+\code{\link{QRMonConditionalCDF}()}
 }
 \concept{Distribution functions}

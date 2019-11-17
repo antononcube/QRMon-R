@@ -21,6 +21,7 @@ Find the fit errors of the monad object data and found regression objects.
 The errors are assigned to \code{qrObj$Value}.
 }
 \seealso{
-Other Errors: \code{\link{QRMonErrorsPlot}}
+Other Errors: 
+\code{\link{QRMonErrorsPlot}()}
 }
 \concept{Errors}

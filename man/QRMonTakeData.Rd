@@ -18,11 +18,12 @@ A data frame or \code{QRMonFailureSymbol}.
 Takes the event records data frame from the monad object.
 }
 \seealso{
-Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonSetValue}},
-  \code{\link{QRMonTakeOutliers}},
-  \code{\link{QRMonTakeRegressionObjects}},
-  \code{\link{QRMonTakeValue}}
+Other Set/Take functions: 
+\code{\link{QRMonSetData}()},
+\code{\link{QRMonSetRegressionObjects}()},
+\code{\link{QRMonSetValue}()},
+\code{\link{QRMonTakeOutliers}()},
+\code{\link{QRMonTakeRegressionObjects}()},
+\code{\link{QRMonTakeValue}()}
 }
 \concept{Set/Take functions}

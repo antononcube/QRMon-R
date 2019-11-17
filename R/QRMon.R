@@ -1341,6 +1341,7 @@ CDFRandomPoints <- function( cdf, n = 1, randomFunction = runif ) {
 
 }
 
+
 #' Simulate data points.
 #' @description Simulate data points based on regression quantiles.
 #' @param qrObj An QRMon object.
@@ -1438,5 +1439,79 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
 
   qrObj$Value <- simResDF
 
+  qrObj
+}
+
+QuartileTopOutlierIdentifier <- function( vec ) {
+  res <- quantile( vec, c(0.25, 0.5, 0.75) )
+  vec > res[[2]] + (res[[3]] - res[[1]])
+}
+
+#' Find anomalies by residuals.
+#' @description Finds the anomalies of the data by using a residuals to
+#' the fitted regression quantile and threshold or an outlier identifier.
+#' @param qrObj A QRMon object.
+#' @param threshold The threshold to be used to identify anomalies.
+#' If NULL the outlier identifier is used.
+#' @param outlierIdentifier Outlier identifier of list of numbers
+#' to be used to identify the anomalies.
+#' If NULL an internal implementation of the quartile outlier
+#' identifier is used.
+#' @param relativeErrorsQ Should relative errors be used or not?
+#' @details The residuals outliers are picked with the formulas:
+#' \code{c(xL,x0,xU) <- quantile( abs(residuals), c(1/4,1/2,3/4) )},
+#' \code{abs(residuals) > x0+(xU-xL)}.
+#' (Errors and residuals are used as synonyms here.)
+#' @return A QRMon object.
+#' @export
+QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdentifier = NULL, relativeErrorsQ = FALSE ) {
+
+  if( !(  is.null(threshold) || is.numeric(threshold) ) ) {
+    warning( "The argument threshold is expected to be a number or null.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( !( is.null(outlierIdentifier) || ( "function" %in% class(outlierIdentifier) ) ) ) {
+    warning( "The argument outlierIdentfier is expected to be a function.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( is.null(outlierIdentifier) ) {
+    outlierIdentifier <- QuartileTopOutlierIdentifier
+  }
+
+  if( is.numeric(threshold) ) {
+
+    outliers <-
+      qrObj %>%
+      QRMonErrors( relativeErrorsQ = relativeErrorsQ ) %>%
+      QRMonPickPathPoints( threshold = threshold, pickAboveThresholdQ = TRUE ) %>%
+      QRMonTakeValue
+
+    if( QRMonFailureQ(outliers) ) { return(QRMonFailureSymbol) }
+
+    outliers <- outliers[[1]]
+
+  } else if ( "function" %in% class(outlierIdentifier)  ) {
+
+    errs <-
+      qrObj %>%
+      QRMonErrors( relativeErrorsQ = relativeErrorsQ ) %>%
+      QRMonTakeValue
+
+    if( QRMonFailureQ(errs) ) { return(QRMonFailureSymbol) }
+
+    outPos <- outlierIdentifier( abs(errs[[1]]$Error) )
+
+    outliers <- (qrObj %>% QRMonTakeData)[ outPos, ]
+
+  } else {
+
+    warning( "Either the argument threshold is a number of the outlierIdentifier is a function.", call. = TRUE )
+    return(QRMonFailureSymbol)
+
+  }
+
+  qrObj$Value <- outliers
   qrObj
 }

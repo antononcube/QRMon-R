@@ -4,9 +4,14 @@
 \alias{QRMonMemberPresenceCheck}
 \title{General member presence check.}
 \usage{
-QRMonMemberPresenceCheck(qrObj, memberName,
-  memberPrettyName = memberName, functionName = "",
-  logicalResult = FALSE, warningQ = TRUE)
+QRMonMemberPresenceCheck(
+  qrObj,
+  memberName,
+  memberPrettyName = memberName,
+  functionName = "",
+  logicalResult = FALSE,
+  warningQ = TRUE
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}

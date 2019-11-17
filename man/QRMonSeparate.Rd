@@ -4,8 +4,7 @@
 \alias{QRMonSeparate}
 \title{Separate data points.}
 \usage{
-QRMonSeparate(qrObj, data = NULL, cumulativeQ = TRUE,
-  fractionsQ = FALSE)
+QRMonSeparate(qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = FALSE)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -30,10 +29,11 @@ If the data frame argument \code{data} has columns "Regressor" and "Value" those
 otherwise the first and second columns are treated as "Regressor" and "Value" respectively.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegressionFit}},
-  \code{\link{QRMonQuantileRegression}},
-  \code{\link{QRMonSeparateToFractions}}
+Other Regression functions: 
+\code{\link{QRMonPickPathPoints}()},
+\code{\link{QRMonPredict}()},
+\code{\link{QRMonQuantileRegressionFit}()},
+\code{\link{QRMonQuantileRegression}()},
+\code{\link{QRMonSeparateToFractions}()}
 }
 \concept{Regression functions}

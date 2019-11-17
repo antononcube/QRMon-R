@@ -21,11 +21,12 @@ Sets the value in a QRMon monad object.
 Assigns \code{value} to \code{qrObj$Value}.
 }
 \seealso{
-Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonTakeData}},
-  \code{\link{QRMonTakeOutliers}},
-  \code{\link{QRMonTakeRegressionObjects}},
-  \code{\link{QRMonTakeValue}}
+Other Set/Take functions: 
+\code{\link{QRMonSetData}()},
+\code{\link{QRMonSetRegressionObjects}()},
+\code{\link{QRMonTakeData}()},
+\code{\link{QRMonTakeOutliers}()},
+\code{\link{QRMonTakeRegressionObjects}()},
+\code{\link{QRMonTakeValue}()}
 }
 \concept{Set/Take functions}

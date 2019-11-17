@@ -19,6 +19,7 @@ Find the monad object data outliers using already found regression objects.
 The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
 }
 \seealso{
-Other Outlier functions: \code{\link{QRMonOutliersPlot}}
+Other Outlier functions: 
+\code{\link{QRMonOutliersPlot}()}
 }
 \concept{Outlier functions}

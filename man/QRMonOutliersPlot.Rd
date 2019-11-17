@@ -4,8 +4,13 @@
 \alias{QRMonOutliersPlot}
 \title{Outliers plot.}
 \usage{
-QRMonOutliersPlot(qrObj, plotRegressionCurvesQ = TRUE,
-  datePlotQ = FALSE, dateOrigin = "1970-01-01", echoQ = TRUE)
+QRMonOutliersPlot(
+  qrObj,
+  plotRegressionCurvesQ = TRUE,
+  datePlotQ = FALSE,
+  dateOrigin = "1970-01-01",
+  echoQ = TRUE
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -28,6 +33,7 @@ Plot the monad object data and found outliers.
 The outliers are assigned to \code{qrObj$Value} and \code{qrObj$Outliers}.
 }
 \seealso{
-Other Outlier functions: \code{\link{QRMonOutliers}}
+Other Outlier functions: 
+\code{\link{QRMonOutliers}()}
 }
 \concept{Outlier functions}

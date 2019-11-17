@@ -23,10 +23,11 @@ Pick points close to the regression functions using a specified threshold.
 The list of data frames is assigned to \code{qrObj$Value}.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegressionFit}},
-  \code{\link{QRMonQuantileRegression}},
-  \code{\link{QRMonSeparateToFractions}},
-  \code{\link{QRMonSeparate}}
+Other Regression functions: 
+\code{\link{QRMonPredict}()},
+\code{\link{QRMonQuantileRegressionFit}()},
+\code{\link{QRMonQuantileRegression}()},
+\code{\link{QRMonSeparateToFractions}()},
+\code{\link{QRMonSeparate}()}
 }
 \concept{Regression functions}

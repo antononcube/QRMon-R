@@ -4,8 +4,7 @@
 \alias{QRMonSimulate}
 \title{Simulate data points.}
 \usage{
-QRMonSimulate(qrObj, n = 100, points = NULL,
-  method = "ConditionalCDF")
+QRMonSimulate(qrObj, n = 100, points = NULL, method = "ConditionalCDF")
 }
 \arguments{
 \item{qrObj}{An QRMon object.}

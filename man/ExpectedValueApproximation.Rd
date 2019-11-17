@@ -16,9 +16,10 @@ Computes an approximated expected value
 using vectors of quantiles and quantile values.
 }
 \seealso{
-Other Distribution functions: \code{\link{CDFApproximation}},
-  \code{\link{PDFApproximation}},
-  \code{\link{QRMonConditionalCDFPlot}},
-  \code{\link{QRMonConditionalCDF}}
+Other Distribution functions: 
+\code{\link{CDFApproximation}()},
+\code{\link{PDFApproximation}()},
+\code{\link{QRMonConditionalCDFPlot}()},
+\code{\link{QRMonConditionalCDF}()}
 }
 \concept{Distribution functions}

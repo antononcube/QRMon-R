@@ -4,8 +4,14 @@
 \alias{QRMonQuantileRegression}
 \title{Quantile regression B-splines basis fit.}
 \usage{
-QRMonQuantileRegression(qrObj, df, knots = NULL, degree = 3,
-  probabilities = c(0.25, 0.5, 0.75), ...)
+QRMonQuantileRegression(
+  qrObj,
+  df,
+  knots = NULL,
+  degree = 3,
+  probabilities = c(0.25, 0.5, 0.75),
+  ...
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -38,10 +44,11 @@ This function can be seen as a splines-basis shortcut of
 \code{\link{QRMonQuantileRegressionFit}}.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegressionFit}},
-  \code{\link{QRMonSeparateToFractions}},
-  \code{\link{QRMonSeparate}}
+Other Regression functions: 
+\code{\link{QRMonPickPathPoints}()},
+\code{\link{QRMonPredict}()},
+\code{\link{QRMonQuantileRegressionFit}()},
+\code{\link{QRMonSeparateToFractions}()},
+\code{\link{QRMonSeparate}()}
 }
 \concept{Regression functions}

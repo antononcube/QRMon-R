@@ -29,10 +29,11 @@ For more details see \code{\link{QRMonSeparate}}.
 (This function is just a shortcut to that one.)
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegressionFit}},
-  \code{\link{QRMonQuantileRegression}},
-  \code{\link{QRMonSeparate}}
+Other Regression functions: 
+\code{\link{QRMonPickPathPoints}()},
+\code{\link{QRMonPredict}()},
+\code{\link{QRMonQuantileRegressionFit}()},
+\code{\link{QRMonQuantileRegression}()},
+\code{\link{QRMonSeparate}()}
 }
 \concept{Regression functions}

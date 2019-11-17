@@ -4,8 +4,7 @@
 \alias{QRMonTakeRegressionObjects}
 \title{Take regression objects}
 \usage{
-QRMonTakeRegressionObjects(qrObj,
-  functionName = "QRMonTakeRegressionObjects")
+QRMonTakeRegressionObjects(qrObj, functionName = "QRMonTakeRegressionObjects")
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -19,10 +18,12 @@ A list of functions or \code{QRMonFailureSymbol}.
 Takes the regression objects from the monad object.
 }
 \seealso{
-Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonSetValue}}, \code{\link{QRMonTakeData}},
-  \code{\link{QRMonTakeOutliers}},
-  \code{\link{QRMonTakeValue}}
+Other Set/Take functions: 
+\code{\link{QRMonSetData}()},
+\code{\link{QRMonSetRegressionObjects}()},
+\code{\link{QRMonSetValue}()},
+\code{\link{QRMonTakeData}()},
+\code{\link{QRMonTakeOutliers}()},
+\code{\link{QRMonTakeValue}()}
 }
 \concept{Set/Take functions}

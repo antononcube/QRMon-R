@@ -18,10 +18,12 @@ A list of functions or \code{QRMonFailureSymbol}.
 Takes the outliers from the monad object.
 }
 \seealso{
-Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonSetValue}}, \code{\link{QRMonTakeData}},
-  \code{\link{QRMonTakeRegressionObjects}},
-  \code{\link{QRMonTakeValue}}
+Other Set/Take functions: 
+\code{\link{QRMonSetData}()},
+\code{\link{QRMonSetRegressionObjects}()},
+\code{\link{QRMonSetValue}()},
+\code{\link{QRMonTakeData}()},
+\code{\link{QRMonTakeRegressionObjects}()},
+\code{\link{QRMonTakeValue}()}
 }
 \concept{Set/Take functions}

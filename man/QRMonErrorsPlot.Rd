@@ -23,6 +23,7 @@ Find and plot the fit errors of the monad object data and found regression objec
 The errors plot are assigned to \code{qrObj$Value}.
 }
 \seealso{
-Other Errors: \code{\link{QRMonErrors}}
+Other Errors: 
+\code{\link{QRMonErrors}()}
 }
 \concept{Errors}

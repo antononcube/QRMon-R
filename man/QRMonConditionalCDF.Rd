@@ -24,9 +24,10 @@ elements of \code{regressorValues}.
 The list of CDF's is assigned to \code{qrObj$Value}.
 }
 \seealso{
-Other Distribution functions: \code{\link{CDFApproximation}},
-  \code{\link{ExpectedValueApproximation}},
-  \code{\link{PDFApproximation}},
-  \code{\link{QRMonConditionalCDFPlot}}
+Other Distribution functions: 
+\code{\link{CDFApproximation}()},
+\code{\link{ExpectedValueApproximation}()},
+\code{\link{PDFApproximation}()},
+\code{\link{QRMonConditionalCDFPlot}()}
 }
 \concept{Distribution functions}

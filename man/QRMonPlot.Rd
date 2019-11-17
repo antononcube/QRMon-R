@@ -4,9 +4,15 @@
 \alias{QRMonPlot}
 \title{Plot with data and regression curves.}
 \usage{
-QRMonPlot(qrObj, dataLineColor = NULL, dataPointsColor = "gray60",
-  regressionCurvesColor = ~RegressionCurve, datePlotQ = FALSE,
-  dateOrigin = "1970-01-01", echoQ = TRUE)
+QRMonPlot(
+  qrObj,
+  dataLineColor = NULL,
+  dataPointsColor = "gray60",
+  regressionCurvesColor = ~RegressionCurve,
+  datePlotQ = FALSE,
+  dateOrigin = "1970-01-01",
+  echoQ = TRUE
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}

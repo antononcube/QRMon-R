@@ -4,8 +4,12 @@
 \alias{QRMonQuantileRegressionFit}
 \title{Quantile regression function basis fit.}
 \usage{
-QRMonQuantileRegressionFit(qrObj, formula, probabilities = c(0.25, 0.5,
-  0.75), ...)
+QRMonQuantileRegressionFit(
+  qrObj,
+  formula,
+  probabilities = c(0.25, 0.5, 0.75),
+  ...
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -31,10 +35,11 @@ The obtained regression objects are assigned/appended to
 For more computational details see \code{\link{quantreg::rq}}.
 }
 \seealso{
-Other Regression functions: \code{\link{QRMonPickPathPoints}},
-  \code{\link{QRMonPredict}},
-  \code{\link{QRMonQuantileRegression}},
-  \code{\link{QRMonSeparateToFractions}},
-  \code{\link{QRMonSeparate}}
+Other Regression functions: 
+\code{\link{QRMonPickPathPoints}()},
+\code{\link{QRMonPredict}()},
+\code{\link{QRMonQuantileRegression}()},
+\code{\link{QRMonSeparateToFractions}()},
+\code{\link{QRMonSeparate}()}
 }
 \concept{Regression functions}

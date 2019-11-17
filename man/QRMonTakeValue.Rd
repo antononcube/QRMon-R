@@ -16,10 +16,12 @@ Just \code{qrObj$Value}.
 Takes the value from QRMon monad object.
 }
 \seealso{
-Other Set/Take functions: \code{\link{QRMonSetData}},
-  \code{\link{QRMonSetRegressionObjects}},
-  \code{\link{QRMonSetValue}}, \code{\link{QRMonTakeData}},
-  \code{\link{QRMonTakeOutliers}},
-  \code{\link{QRMonTakeRegressionObjects}}
+Other Set/Take functions: 
+\code{\link{QRMonSetData}()},
+\code{\link{QRMonSetRegressionObjects}()},
+\code{\link{QRMonSetValue}()},
+\code{\link{QRMonTakeData}()},
+\code{\link{QRMonTakeOutliers}()},
+\code{\link{QRMonTakeRegressionObjects}()}
 }
 \concept{Set/Take functions}

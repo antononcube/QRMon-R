@@ -1,0 +1,57 @@
+---
+title: "Anomaly detection by residuals"
+author: Anton Antonov
+date: 2019-11-16
+output: html_notebook
+---
+
+```{r}
+devtools::load_all()
+library(MathematicaVsRData)
+library(OutlierIdentifiers)
+```
+
+# Quantile Regression fit
+
+```{r}
+qrObj <- 
+  QRMonUnit( dfTemperatureData ) %>% 
+  QRMonQuantileRegression( df = 12, probabilities = 0.5 ) %>% 
+  QRMonPlot( datePlotQ = TRUE ) %>% 
+  QRMonErrorsPlot( relativeErrorsQ = FALSE )
+```
+
+# By threshold
+
+```{r}
+dfOutliers1 <- 
+  qrObj %>% 
+  QRMonFindAnomaliesByResiduals( threshold = 5, relativeErrorsQ = FALSE ) %>% 
+  QRMonTakeValue
+```
+
+```{r}
+ggplot(dfTemperatureData) +
+  geom_point( aes( x = Time, y = Temperature ), color = "gray" ) +
+  geom_point( data = dfOutliers1, aes( x = Regressor, y = Value ), color = "red" )
+```
+
+# By outlier identifiers
+
+
+```{r}
+dfOutliers2 <- 
+  qrObj %>% 
+  QRMonFindAnomaliesByResiduals( threshold = NULL, 
+                                 #outlierIdentifier = function(x) TopOutlierPosition( x, identifier = SPLUSQuartileIdentifierParameters ), 
+                                 outlierIdentifier = NULL,
+                                 relativeErrorsQ = FALSE ) %>% 
+  QRMonTakeValue
+```
+
+```{r}
+ggplot(dfTemperatureData) +
+  geom_point( aes( x = Time, y = Temperature ), color = "gray" ) +
+  geom_point( data = dfOutliers2, aes( x = Regressor, y = Value ), color = "red" )
+```
+
