@@ -4,11 +4,13 @@
 \name{dfTemperatureData}
 \alias{dfTemperatureData}
 \title{Orlando temperature data}
-\format{A data frame with 1461 rows and 2 columns.
+\format{
+A data frame with 1461 rows and 2 columns.
 \describe{
     \item{Time}{Date as the number of seconds from 1900-01-01 00:00}
     \item{Temperature}{Temperature in Celsius}
-}}
+}
+}
 \usage{
 dfTemperatureData
 }

@@ -4,11 +4,13 @@
 \name{dfFinancialData}
 \alias{dfFinancialData}
 \title{GE stock data}
-\format{A data frame with 1258 rows and 2 columns.
+\format{
+A data frame with 1258 rows and 2 columns.
 \describe{
     \item{Time}{Date}
     \item{Value}{Adjusted stock price in US dollars}
-}}
+}
+}
 \usage{
 dfFinancialData
 }

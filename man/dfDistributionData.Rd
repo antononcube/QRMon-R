@@ -4,11 +4,13 @@
 \name{dfDistributionData}
 \alias{dfDistributionData}
 \title{Heteroscedastic distribution data}
-\format{A data frame with 601 rows and 2 columns.
+\format{
+A data frame with 601 rows and 2 columns.
 \describe{
     \item{X}{x-coordinate}
     \item{Y}{y-coordinate}
-}}
+}
+}
 \usage{
 dfDistributionData
 }
