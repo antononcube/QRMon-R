@@ -1,4 +1,4 @@
-# Quantile Regression workflows monad in R 
+# Quantile Regression Monad in R 
 
 This repository is for the R implementation of a software monad for Quantile Regression
 workflows called **Q**uantile **R**egression **Mon**ad (QRMon).
