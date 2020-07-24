@@ -11,6 +11,7 @@ library(SparseMatrixRecommender)
 library(quantreg)
 library(magrittr)
 library(splines)
+library(ggplot2)
 library(ExternalParsersHookUp)
 ```
 
@@ -18,26 +19,6 @@ library(ExternalParsersHookUp)
 
 This notebook demonstrates the construction of Quantile Regression workflows
 using natural language commands.
-
-# Additional definitions
-
-```{r, eval=T}
-Perl6QRMonParsingLib <- function() {
-    file.path("/", "Volumes", "Macintosh HD", "Users", "antonov", "ConversationalAgents", "Packages", "Perl6", "QuantileRegressionWorkflows", "lib")
-}
-```
-
-```{r, eval=T}
-to_QRMon_R_command <- function(command, parse=TRUE) {
-  pres <- Perl6Command( command = paste0( "say to_QRMon_R(\"", command, "\")"),
-                        moduleDirectory = Perl6QRMonParsingLib(),
-                        moduleName = "QuantileRegressionWorkflows" )
-  pres <- gsub( "\\\"", "\"", pres, fixed = T)
-  if(parse) { parse(text = pres) }
-  else { pres }
-}
-```
-
 
 # Basic pipeline
 
@@ -50,30 +31,24 @@ qrmon <-
 
 ```{r}
 pipeline <- 
-  to_QRMon_R_command( 
+  ToQuantileRegressionWorkflowCode( 
     "use object qrmon;
      compute quantile regression with 12 knots;
      show plot", parse = T )
 pipeline
 ```
 
-```{r}
-eval( expr = to_QRMon_R_command( 
-    "use object qrmon;
-     compute quantile regression with knots 12 and probabilities 0.1 0.5 0.8;
-     show plot" ) )
-```
 
 ```{r}
 res <- 
-  eval( expr = to_QRMon_R_command( 
+  eval( expr = ToQuantileRegressionWorkflowCode( 
     "use object qrmon;
      summarize data;
      show plot" ) )
 ```
 
 ```{r}
- to_QRMon_R_command( 
+ ToQuantileRegressionWorkflowCode( 
     "create from dfTemperatureData;
      compute quantile regression with 12 knots;
      show plot", parse = F ) 
@@ -81,7 +56,7 @@ res <-
 
 ```{r}
 qrObj2 <-
-  eval( expr = to_QRMon_R_command( 
+  eval( expr = ToQuantileRegressionWorkflowCode( 
     "create from dfTemperatureData;
      summarize data;
      rescale value axis;
@@ -89,4 +64,56 @@ qrObj2 <-
      show plot" ) )
 ```
 
+# Outliers
+
+```{r}
+ToQuantileRegressionWorkflowCode( 
+    "use object qrmon;
+     compute quantile regression with knots 12, interpolation degree 2 and probabilities 0.1 0.5 0.95;
+     show date list plot with date origin 1900-01-01;
+     find outliers", parse = F) 
+```
+
+```{r}
+qrmon2 <- 
+  eval( expr = ToQuantileRegressionWorkflowCode( 
+    "use object qrmon;
+     compute quantile regression with knots 12 and probabilities 0.1 0.5 0.95;
+     show date list plot with date origin 1900-01-01;
+     find outliers", parse = T) )
+```
+
+# Anomalies
+
+```{r}
+ToQuantileRegressionWorkflowCode( 
+    "create from dfTemperatureData;
+     compute quantile regression with 16 knots and probability 0.5;
+     show date list plot with date origin 1900-01-01;
+     show absolute errors plot;
+     find anomalies by the threshold 5;
+     take pipeline value;
+    ", parse=F)
+```
+
+
+```{r}
+dfAnomalies <-
+  eval( expr = ToQuantileRegressionWorkflowCode( 
+    "create from dfTemperatureData;
+     compute quantile regression with 16 knots and probability 0.5;
+     show date list plot with date origin 1900-01-01;
+     show absolute errors plot;
+     echo text anomalies finding follows;
+     find anomalies by the threshold 5;
+     take pipeline value;
+    ") )
+```
+
+Plot the data (`dfTemperatureData`) and the found anomalies:
+
+```{r, warning=FALSE}
+(QRMonUnit(dfTemperatureData) %>% QRMonPlot(echoQ = FALSE, datePlotQ = TRUE, dateOrigin = "1900-01-01") %>% QRMonTakeValue) + 
+ggplot2::geom_point( data = dfAnomalies, ggplot2::aes( x = as.POSIXct(Regressor, origin = "1900-01-01"), y = Value ), color = "red" )
+```
 
