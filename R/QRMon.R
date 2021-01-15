@@ -899,10 +899,11 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
   res <-
     purrr::map( names(regObjs),
                    function(x) {
-                     errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value" ]
+                     errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
+                     errs <- errs[[1]]
 
                      if( relativeErrorsQ ) {
-                       errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
+                       errs <- errs / ifelse( data[["Value"]] == 0, 1, data[["Value"]] )
                      }
 
                      data.frame( Regressor = data[, "Regressor"], Error = errs )
@@ -941,10 +942,11 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
   res <-
     purrr::map_df( names(regObjs),
                    function(x) {
-                     errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value" ]
+                     errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
+                     errs <- errs[[1]]
 
                      if( relativeErrorsQ ) {
-                       errs <- errs / ifelse( data[, "Value" ] == 0, 1, data[, "Value" ] )
+                       errs <- errs / ifelse( data[["Value"]] == 0, 1, data[["Value"]] )
                      }
 
                      data.frame( RegressionCurve = x,
