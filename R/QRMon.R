@@ -924,12 +924,16 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
 #' @description Find and plot the fit errors of the monad object data and found regression objects.
 #' @param qrObj An QRMon object.
 #' @param relativeErrorsQ Should relative errors be computed?
+#' @param datePlotQ Should the regressor axis have dates scale?
+#' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
 #' @param echoQ To echo the plot the or not?
 #' @return A QRMon object.
 #' @details The errors plot are assigned to \code{qrObj$Value}.
 #' @family Errors
 #' @export
-QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
+QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE,
+                             datePlotQ = FALSE, dateOrigin = "1970-01-01",
+                             echoQ = TRUE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -955,9 +959,14 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE, echoQ = TRUE ) {
                                  stringsAsFactors = F)
                    })
 
+  if( datePlotQ ) {
+    res$Regressor <- as.POSIXct( res$Regressor, origin = dateOrigin )
+  }
+
   resPlot <-
     ggplot2::ggplot(res) +
     ggplot2::geom_point( ggplot2::aes( x = Regressor, y = Error, color = RegressionCurve ) ) +
+    ggplot2::ylab( ifelse( relativeErrorsQ, "Relative error", "Absolute error") ) +
     ggplot2::geom_segment( ggplot2::aes(x = Regressor, xend = Regressor, y = 0, yend = Error, color = RegressionCurve ) ) +
     ggplot2::facet_wrap( ~RegressionCurve )
 

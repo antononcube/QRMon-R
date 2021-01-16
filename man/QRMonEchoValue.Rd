@@ -19,8 +19,8 @@ Prints the "Value" element/member of the monad object.
 Prints \code{qrObj$Value}.
 }
 \seealso{
-Other Echo funcitons: 
+Other Echo functions: 
 \code{\link{QRMonEchoFunctionValue}()},
 \code{\link{QRMonEcho}()}
 }
-\concept{Echo funcitons}
+\concept{Echo functions}

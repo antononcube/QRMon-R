@@ -4,12 +4,22 @@
 \alias{QRMonErrorsPlot}
 \title{Fit errors plot.}
 \usage{
-QRMonErrorsPlot(qrObj, relativeErrorsQ = TRUE, echoQ = TRUE)
+QRMonErrorsPlot(
+  qrObj,
+  relativeErrorsQ = TRUE,
+  datePlotQ = FALSE,
+  dateOrigin = "1970-01-01",
+  echoQ = TRUE
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
 
 \item{relativeErrorsQ}{Should relative errors be computed?}
+
+\item{datePlotQ}{Should the regressor axis have dates scale?}
+
+\item{dateOrigin}{Same as the argument \code{origin} of \code{as.POSIXct}.}
 
 \item{echoQ}{To echo the plot the or not?}
 }

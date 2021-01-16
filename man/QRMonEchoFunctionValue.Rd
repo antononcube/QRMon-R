@@ -21,8 +21,8 @@ Apply a function to the "Value" element/member of the monad object.
 Prints \code{f(qrObj$Value)}.
 }
 \seealso{
-Other Echo funcitons: 
+Other Echo functions: 
 \code{\link{QRMonEchoValue}()},
 \code{\link{QRMonEcho}()}
 }
-\concept{Echo funcitons}
+\concept{Echo functions}

@@ -18,8 +18,8 @@ A QRMon object.
 Echoes given object.
 }
 \seealso{
-Other Echo funcitons: 
+Other Echo functions: 
 \code{\link{QRMonEchoFunctionValue}()},
 \code{\link{QRMonEchoValue}()}
 }
-\concept{Echo funcitons}
+\concept{Echo functions}
