@@ -1,7 +1,10 @@
 # Quantile Regression Monad in R 
 
+<!-- badges: start -->
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-
+[![Codecov test coverage](https://codecov.io/gh/antononcube/QRMon-R/branch/master/graph/badge.svg)](https://codecov.io/gh/antononcube/QRMon-R?branch=master)
+<!-- badges: end -->
+  
 This repository is for the R implementation of a software monad for Quantile Regression
 workflows called **Q**uantile **R**egression **Mon**ad (QRMon).
 
