@@ -442,7 +442,7 @@ QRMonDeleteMissing <- function( qrObj) {
   data <- QRMonTakeData( qrObj = qrObj, functionName = "QRMonDeleteMissing" )
   if( QRMonFailureQ(data) ) { return(QRMonFailureSymbol) }
 
-  qiObj %>% QRMonSetData( data = data )
+  qrObj %>% QRMonSetData( data = data )
 
 }
 
