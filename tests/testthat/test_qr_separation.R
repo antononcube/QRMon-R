@@ -3,7 +3,7 @@ library(QRMon)
 
 
 ## In some sense these test prove that the
-## Quantile Regression implementation is corect
+## Quantile Regression implementation is correct
 ## together with the separation implementation.
 
 qFracs0 <-
@@ -60,4 +60,29 @@ test_that("Correct formula fit, non-cumulative probabilities for temperature dat
   expect_true( abs( qFracs3[["0.8"]] - 0.2) < 0.05 )
 })
 
+
+## Separation of external data
+## The list lsSep can be visualized with:
+## ggplot( dplyr::bind_rows( lsSep, .id = "Prob" ) ) + geom_point( aes( x = Regressor, y = Value, color = Prob) )
+
+test_that("Separate external data", {
+
+  qrObj4 <-
+    QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+    QRMonQuantileRegression( df = 6, degree = 3, probabilities = seq(0.2,0.8,0.2) )
+
+  lsSep <- qrObj4 %>% QRMonSeparate( dfTemperatureData[ sample(1:nrow(dfTemperatureData), floor(0.7 * nrow(dfTemperatureData))), ], cumulativeQ = FALSE) %>% QRMonTakeValue
+
+  expect_type( lsSep, "list" )
+
+  expect_equal( names(lsSep), names(qrObj4 %>% QRMonTakeRegressionObjects) )
+
+  qFracs4 <- qrObj4 %>% QRMonSeparateToFractions(cumulativeQ = FALSE) %>% QRMonTakeValue()
+
+  expect_true( abs( qFracs4[["0.2"]] - 0.2) < 0.05 )
+  expect_true( abs( qFracs4[["0.4"]] - 0.2) < 0.05 )
+  expect_true( abs( qFracs4[["0.6"]] - 0.2) < 0.05 )
+  expect_true( abs( qFracs4[["0.8"]] - 0.2) < 0.05 )
+
+})
 
