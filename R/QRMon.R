@@ -431,7 +431,7 @@ QRMonEchoDataSummary <- function( qrObj ) {
 #' Remove missing data.
 #' @description Removes data rows with missing data fields (NA's).
 #' @param qrObj An QRMon object.
-#' @details This function is most likely reduntant.
+#' @details This function is most likely redundant.
 #' The function \code{\link{QRMonSetData}} does removal of missing data.
 #' @return A QRMon object.
 #' @export
@@ -900,10 +900,9 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
     purrr::map( names(regObjs),
                    function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
-                     errs <- errs[[1]]
 
                      if( relativeErrorsQ ) {
-                       errs <- errs / ifelse( data[["Value"]] == 0, 1, data[["Value"]] )
+                       errs <- errs / abs(ifelse( data[["Value"]] == 0, 1, data[["Value"]] ))
                      }
 
                      data.frame( Regressor = data[, "Regressor"], Error = errs )
@@ -947,10 +946,9 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE,
     purrr::map_df( names(regObjs),
                    function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
-                     errs <- errs[[1]]
 
                      if( relativeErrorsQ ) {
-                       errs <- errs / ifelse( data[["Value"]] == 0, 1, data[["Value"]] )
+                       errs <- errs / abs(ifelse( data[["Value"]] == 0, 1, data[["Value"]] ))
                      }
 
                      data.frame( RegressionCurve = x,
@@ -1265,10 +1263,10 @@ QRMonSeparate <- function( qrObj, data = NULL, cumulativeQ = TRUE, fractionsQ = 
   } else {
 
     dataColNames <- c( "Regressor", "Value")
-    if( colnames(data) %in% dataColNames ) {
+    if( sum( colnames(data) %in% dataColNames ) == 2 ) {
       data <- data[, dataColNames]
     } else {
-      data <- setName( data[, 1:2], dataColNames )
+      data <- setNames( data[, 1:2], dataColNames )
     }
 
   }
@@ -1476,8 +1474,13 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
   qrObj
 }
 
+
+##===========================================================
+## Anomaly detection
+##===========================================================
+
 QuartileTopOutlierIdentifier <- function( vec ) {
-  res <- quantile( vec, c(0.25, 0.5, 0.75) )
+  res <- quantile(vec, c(1/4, 1/2, 3/4), na.rm = TRUE)
   vec > res[[2]] + (res[[3]] - res[[1]])
 }
 
