@@ -16,6 +16,6 @@ A QRMon object.
 Removes data rows with missing data fields (NA's).
 }
 \details{
-This function is most likely reduntant.
+This function is most likely redundant.
 The function \code{\link{QRMonSetData}} does removal of missing data.
 }
