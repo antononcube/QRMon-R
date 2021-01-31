@@ -41,7 +41,7 @@ TopOutlierPosition <-
     which(data >= lowerAndUpperThresholds[[2]])
   }
 
-test_that("Anomaly detection by residuals using outlier identifier", {
+test_that("Anomalies detection by residuals using outlier identifier", {
 
   qrObj2 <-
     QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
@@ -69,6 +69,36 @@ test_that("Anomaly detection by residuals using outlier identifier", {
   expect_s3_class( dfOutliers3, "data.frame")
 
   expect_true( nrow(dfOutliers3) < floor( 0.2 * nrow( dfTemperatureData ) ) )
+
+})
+
+
+test_that("Variance anomalies detection", {
+
+  qrObj3 <-
+    QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+    QRMonQuantileRegression( df = 12, probabilities = c(0.25, 0.75) )
+
+  dfVarOutliers1 <-
+    qrObj3 %>%
+    QRMonFindVarianceAnomalies( outlierIdentifier = NULL,
+                                positionsQ = FALSE ) %>%
+    QRMonTakeValue
+
+  expect_s3_class( dfVarOutliers1, "data.frame")
+
+  expect_true( nrow(dfVarOutliers1) < floor( 0.45 * nrow( dfTemperatureData ) ) )
+
+
+  dfVarOutliers2 <-
+    qrObj3 %>%
+    QRMonFindVarianceAnomalies( outlierIdentifier = NULL,
+                                positionsQ = TRUE ) %>%
+    QRMonTakeValue
+
+  expect_type( dfVarOutliers2, "integer")
+
+  expect_true( length(dfVarOutliers2) < floor( 0.45 * nrow( dfTemperatureData ) ) )
 
 })
 
