@@ -79,9 +79,45 @@ test_that("Simulation warnings", {
 
 test_that("Monad elements warnings", {
 
-  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Time", "Value") ) ) %>%
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
                     QRMonOutliersPlot(),
                   "Cannot find Outliers.")
+
+})
+
+
+test_that("Anomalies by residuals finding warnings", {
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonFindAnomaliesByResiduals( outlierIdentifier = 12 ),
+                  "The argument outlierIdentfier is expected to be a function or NULL.")
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonFindAnomaliesByResiduals( threshold = c("df","12") ),
+                  "The argument threshold is expected to be a number or NULL.")
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonFindAnomaliesByResiduals( threshold = c(12, 3) ),
+                  "The argument threshold is expected to be a number or NULL.")
+
+})
+
+
+test_that("Variance anomalies finding warnings", {
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonFindVarianceAnomalies(),
+                  "At least two fitted regression quantiles are expected.")
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonQuantileRegression( df = 16, probabilities = 0.3) %>%
+                    QRMonFindVarianceAnomalies(),
+                  "At least two fitted regression quantiles are expected.")
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonQuantileRegression( df = 16, probabilities = c(0.3, 0.8)) %>%
+                    QRMonFindVarianceAnomalies( outlierIdentifier = 312),
+                  "The argument outlierIdentfier is expected to be a function or NULL.")
 
 })
 
