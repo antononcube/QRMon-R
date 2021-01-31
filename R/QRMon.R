@@ -1186,11 +1186,12 @@ QRMonConditionalCDFPlot <- function( qrObj, regressorValues, valueGridPoints = N
 #' @param qrObj An QRMon object.
 #' @param threshold The pick threshold.
 #' @param pickAboveThresholdQ Should points be picked below or above the threshold?
+#' @param relativeErrorsQ Should relative errors be used?
 #' @return A QRMon object.
 #' @details The list of data frames is assigned to \code{qrObj$Value}.
 #' @family Regression functions
 #' @export
-QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE ) {
+QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE, relativeErrorsQ = FALSE ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
@@ -1213,7 +1214,11 @@ QRMonPickPathPoints <- function( qrObj, threshold, pickAboveThresholdQ = FALSE )
     purrr::map(
       qrVals,
       function(x) {
-        picks <- abs( x[,"Value"] - data[, "Value"] ) <= threshold
+        errs <- abs( x[,"Value"] - data[, "Value"] )
+        if( relativeErrorsQ ) {
+          errs <- errs / abs(ifelse( data[["Value"]] == 0, 1, data[["Value"]] ))
+        }
+        picks <- errs <= threshold
         if( pickAboveThresholdQ ) { picks <- ! picks }
         data[ picks, ]
       })
@@ -1535,8 +1540,7 @@ QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdent
 
     outliers <-
       qrObj %>%
-      QRMonErrors( relativeErrorsQ = relativeErrorsQ ) %>%
-      QRMonPickPathPoints( threshold = threshold, pickAboveThresholdQ = TRUE ) %>%
+      QRMonPickPathPoints( threshold = threshold, pickAboveThresholdQ = TRUE, relativeErrorsQ = relativeErrorsQ ) %>%
       QRMonTakeValue
 
     if( QRMonFailureQ(outliers) ) { return(QRMonFailureSymbol) }

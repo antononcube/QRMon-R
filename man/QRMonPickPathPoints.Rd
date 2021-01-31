@@ -4,7 +4,12 @@
 \alias{QRMonPickPathPoints}
 \title{Pick path points.}
 \usage{
-QRMonPickPathPoints(qrObj, threshold, pickAboveThresholdQ = FALSE)
+QRMonPickPathPoints(
+  qrObj,
+  threshold,
+  pickAboveThresholdQ = FALSE,
+  relativeErrorsQ = FALSE
+)
 }
 \arguments{
 \item{qrObj}{An QRMon object.}
@@ -12,6 +17,8 @@ QRMonPickPathPoints(qrObj, threshold, pickAboveThresholdQ = FALSE)
 \item{threshold}{The pick threshold.}
 
 \item{pickAboveThresholdQ}{Should points be picked below or above the threshold?}
+
+\item{relativeErrorsQ}{Should relative errors be used?}
 }
 \value{
 A QRMon object.
