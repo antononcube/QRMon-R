@@ -20,7 +20,7 @@ If NULL the outlier identifier is used.}
 \item{outlierIdentifier}{Outlier identifier of list of numbers
 to be used to identify the anomalies.
 If NULL an internal implementation of the quartile outlier
-identifier is used.}
+identifier is used. (For the top outliers.)}
 
 \item{relativeErrorsQ}{Should relative errors be used or not?}
 }
@@ -28,7 +28,7 @@ identifier is used.}
 A QRMon object.
 }
 \description{
-Finds the anomalies of the data by using a residuals to
+Finds anomalies in the data by using a residuals of
 the fitted regression quantile and threshold or an outlier identifier.
 }
 \details{

@@ -1476,16 +1476,28 @@ QRMonSimulate <- function( qrObj, n = 100, points = NULL, method = "ConditionalC
 
 
 ##===========================================================
-## Anomaly detection
+## Local Outlier Identifiers
 ##===========================================================
 
+## For local use only.
+QuartileOutlierIdentifier <- function( vec ) {
+  res <- quantile(vec, c(1/4, 1/2, 3/4), na.rm = TRUE)
+  vec < res[[2]] - (res[[3]] - res[[1]]) | res[[2]] + (res[[3]] - res[[1]]) < vec
+}
+
+## For local use only.
 QuartileTopOutlierIdentifier <- function( vec ) {
   res <- quantile(vec, c(1/4, 1/2, 3/4), na.rm = TRUE)
   vec > res[[2]] + (res[[3]] - res[[1]])
 }
 
+
+##===========================================================
+## Anomalies detection by residuals
+##===========================================================
+
 #' Find anomalies by residuals.
-#' @description Finds the anomalies of the data by using a residuals to
+#' @description Finds anomalies in the data by using a residuals of
 #' the fitted regression quantile and threshold or an outlier identifier.
 #' @param qrObj A QRMon object.
 #' @param threshold The threshold to be used to identify anomalies.
@@ -1493,7 +1505,7 @@ QuartileTopOutlierIdentifier <- function( vec ) {
 #' @param outlierIdentifier Outlier identifier of list of numbers
 #' to be used to identify the anomalies.
 #' If NULL an internal implementation of the quartile outlier
-#' identifier is used.
+#' identifier is used. (For the top outliers.)
 #' @param relativeErrorsQ Should relative errors be used or not?
 #' @details The residuals outliers are picked with the formulas:
 #' \code{c(xL,x0,xU) <- quantile( abs(residuals), c(1/4,1/2,3/4) )},
@@ -1503,13 +1515,15 @@ QuartileTopOutlierIdentifier <- function( vec ) {
 #' @export
 QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdentifier = NULL, relativeErrorsQ = FALSE ) {
 
-  if( !(  is.null(threshold) || is.numeric(threshold) ) ) {
-    warning( "The argument threshold is expected to be a number or null.", call. = TRUE )
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  if( !(  is.null(threshold) || is.numeric(threshold) && length(threshold) == 1 ) ) {
+    warning( "The argument threshold is expected to be a number or NULL.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
   if( !( is.null(outlierIdentifier) || ( "function" %in% class(outlierIdentifier) ) ) ) {
-    warning( "The argument outlierIdentfier is expected to be a function.", call. = TRUE )
+    warning( "The argument outlierIdentfier is expected to be a function or NULL.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
@@ -1552,3 +1566,66 @@ QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdent
   qrObj$Value <- outliers
   qrObj
 }
+
+
+##===========================================================
+## Find Variance Anomalies
+##===========================================================
+
+#' Find variance anomalies.
+#' @description Finds the variance anomalies of the data by using
+#' the differences of the fitted regression quantiles corresponding to
+#' the lowest and highest probabilities and
+#' an outlier identifier applied to those differences.
+#' @param qrObj A QRMon object.
+#' @param outlierIdentifier Outlier identifier of list of numbers
+#' to be used to identify the anomalies.
+#' If NULL an internal implementation of the quartile outlier
+#' identifier is used.
+#' @param positionsQ Should position be returned or points?
+#' @return A QRMon object.
+#' @export
+QRMonFindVarianceAnomalies <- function( qrObj, outlierIdentifier = NULL, positionsQ = FALSE ) {
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  lsRQs <- qrObj %>% QRMonTakeRegressionObjects
+
+  if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
+
+  if( is.null(lsRQs) || length(lsRQs) < 2 ) {
+    warning( "At least two fitted regression quantiles are expected.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( !( is.null(outlierIdentifier) || ( "function" %in% class(outlierIdentifier) ) ) ) {
+    warning( "The argument outlierIdentfier is expected to be a function or NULL.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  if( is.null(outlierIdentifier) ) {
+    outlierIdentifier <- QuartileOutlierIdentifier
+  }
+
+  lsRes <- qrObj %>% QRMonPredict %>% QRMonTakeValue
+
+  if( QRMonFailureQ(lsRes) ) { return(QRMonFailureSymbol) }
+
+  dfRes <- dplyr::bind_rows( lsRes, .id = "Prob")
+
+  maxPPos <- which.max( as.numeric(names(lsRes)) )
+  minPPos <- which.min( as.numeric(names(lsRes)) )
+
+  dfDiffs <- data.frame( Regressor = lsRes[[maxPPos]]["Regressor"], Value = abs(lsRes[[maxPPos]]["Value"] - lsRes[[minPPos]]["Value"] ) )
+
+  lsOutlierPos <- outlierIdentifier( dfDiffs$Value )
+
+  if( positionsQ ) {
+    qrObj$Value <- seq(1, nrow(qrObj %>% QRMonTakeData))[lsOutlierPos]
+  } else {
+    qrObj$Value <- (qrObj %>% QRMonTakeData )[lsOutlierPos, ]
+  }
+
+  qrObj
+}
+
