@@ -1,0 +1,210 @@
+---
+title: "QRMon outliers workflow"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(magrittr)
+library(ggplot2)
+library(QRMon)
+library(OutlierIdentifiers)
+```
+
+
+Sidebar {.sidebar}
+=====================================
+
+```{r}
+selectInput( inputId = "dataSpec", label = "Data:", choices = c( "DistributionData", "FinancialData", "TemperatureData" ), selected = "TemperatureData" )
+
+checkboxInput( inputId = "dateAxisQ", label = "Date axis:", value = FALSE )
+
+hr()
+
+textInput( inputId = "probs", label = "Probabilities:", value = "0.25, 0.5, 0.75")
+
+sliderInput( inputId = "df", label = "Degrees of freedom:", min = 1, max = 120, step = 1, value = 12 )
+
+hr()
+
+checkboxInput( inputId = "relativeErrorsQ", label = "Use relative errors:", value = FALSE )
+
+numericInput( inputId = "outlierThreshold", label = "Outliers threshold:", min = 0, max = 100, step = 0.05, value = 1 )
+
+selectInput( inputId = "outlierIdentifier", 
+             label = "Outlier identifier:", 
+             choices = c( "Hampel", "SPLUSQuartile", "QuartileIdentifier"), 
+             selected = "Hampel" )
+
+```
+
+Data and fit
+=====================================
+
+```{r}
+dataset <- reactive({
+  list( "DistributionData" = dfDistributionData, "FinancialData" = dfFinancialData, "TemperatureData" = dfTemperatureData )[[input$dataSpec]]
+})
+
+outlierIdentifierParameters <- reactive({
+  list( 
+    "Hampel" = HampelIdentifierParameters, 
+    "SPLUSQuartile" = SPLUSQuartileIdentifierParameters, 
+    "QuartileIdentifier" = QuartileIdentifierParameters
+  )[[input$outlierIdentifier]]
+})  
+
+pointOutlierIdentifier <- reactive({
+  function(x) TopOutlierIdentifier(data = x, identifier = outlierIdentifierParameters()) 
+})
+
+varianceOutlierIdentifier <- reactive({
+  function(x) OutlierIdentifier(data = x, identifier = outlierIdentifierParameters()) 
+})
+
+qrObj <- reactive({
+  lsProbs <- strsplit( input$probs, ",|\\s")[[1]]
+  lsProbs <- as.numeric( lsProbs[nchar(lsProbs) > 0 ] )
+  
+  QRMonUnit( setNames( dataset(), c("Regressor", "Value") ) ) %>%
+    QRMonQuantileRegression( df = input$df, probabilities = lsProbs)
+})
+```
+
+### Summary
+
+```{r}
+renderPrint(
+  summary(qrObj() %>% QRMonTakeData)
+)
+```
+
+### Plot data and regression quantiles
+
+```{r}
+plotQR <- reactive({
+  qrObj() %>% QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% QRMonTakeValue
+})
+
+renderPlot( expr = {
+  print(plotQR())
+})
+```
+
+### Plot errors
+
+```{r}
+renderPlot( expr = {
+  print(qrObj() %>% QRMonErrorsPlot(relativeErrorsQ = input$relativeErrorsQ, datePlotQ = input$dateAxisQ ))
+})
+```
+
+Anomalies by residuals
+=====================================
+
+### Using threshold
+
+```{r}
+dfPointOutliers <- reactive({
+  qrObj() %>% 
+    QRMonFindAnomaliesByResiduals( threshold = input$outlierThreshold, outlierIdentifier = NULL, relativeErrorsQ = input$relativeErrorsQ ) %>% 
+    QRMonTakeValue
+})
+
+renderPlot( expr = {
+  
+  print(
+    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
+      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+      QRMonTakeValue +
+      geom_point( data = dfPointOutliers(), 
+                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                       y = Value ), 
+                  color = "red" ) 
+  )
+})
+```
+
+### Using outlier identifier
+
+```{r}
+dfPointOutliersByFunc <- reactive({
+  qrObj() %>% 
+    QRMonFindAnomaliesByResiduals( threshold = NULL, outlierIdentifier = pointOutlierIdentifier(), relativeErrorsQ = input$relativeErrorsQ ) %>% 
+    QRMonTakeValue
+})
+
+renderPlot( expr = {
+  
+  print(
+    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
+      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+      QRMonTakeValue +
+      geom_point( data = dfPointOutliersByFunc(), 
+                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                       y = Value ), 
+                  color = "red" ) 
+  )
+})
+```
+
+
+Variance anomalies
+=====================================
+
+### Conditional variance
+
+```{r}
+renderPlot( expr = {
+  
+  lsRes <- qrObj() %>% QRMonPredict( ) %>% QRMonTakeValue
+  dfRes <- dplyr::bind_rows( lsRes, .id = "Prob")
+  dfDiffs <- data.frame( Regressor = lsRes[[2]]["Regressor"], Diff = abs(lsRes[[2]]["Value"] - lsRes[[1]]["Value"] ) )
+
+  lsOutlierPos <- varianceOutlierIdentifier()( dfDiffs$Value )
+  
+  if( length(lsOutlierPos) == 0 || sum(lsOutlierPos) == 0 ) { 
+    ggplot( cbind( Type = "VarianceDiff", dfDiffs) ) +
+      geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                       y = Value,  
+                       color = Type)
+      ) +
+      xlab("Regressor")
+  } else {
+    ggplot( rbind( cbind( Type = "VarianceDiff", dfDiffs), 
+                   cbind( Type = "Outliers", dfDiffs[lsOutlierPos, ,drop=F]) ) ) + 
+      geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                       y = Value,  
+                       color = Type)
+      ) +
+      xlab("Regressor")
+  }
+})
+```
+
+### Variance outliers
+
+```{r}
+dfVarOutliers <- reactive({
+  qrObj() %>% 
+    QRMonFindVarianceAnomalies( outlierIdentifier = varianceOutlierIdentifier(), positionsQ = FALSE ) %>% 
+    QRMonTakeValue
+})
+
+renderPlot( expr = {
+  
+  print(
+    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
+      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+      QRMonTakeValue +
+      geom_point( data = dfVarOutliers(), 
+                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                       y = Value ), 
+                  color = "red" ) 
+  )
+})
+```
