@@ -7,24 +7,30 @@ test_that("Picking path points", {
     QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
     QRMonQuantileRegression( df = 12, probabilities = 0.5 )
 
+  lsAbsoluteErrors <- (qrObj1 %>% QRMonErrors( relativeErrorsQ = FALSE ) %>% QRMonTakeValue)[[1]]$Error
+  lsRelativeErrors <- (qrObj1 %>% QRMonErrors( relativeErrorsQ = TRUE ) %>% QRMonTakeValue)[[1]]$Error
+
+  expect_true( is.numeric(lsAbsoluteErrors))
+  expect_true( is.numeric(lsRelativeErrors))
+
   dfPath1 <-
     qrObj1 %>%
-    QRMonPickPathPoints( threshold = 2.5, pickAboveThresholdQ = FALSE, relativeErrorsQ = FALSE ) %>%
+    QRMonPickPathPoints( threshold = median(lsAbsoluteErrors) * 0.98, pickAboveThresholdQ = FALSE, relativeErrorsQ = FALSE ) %>%
     QRMonTakeValue
 
   dfPath2 <-
     qrObj1 %>%
-    QRMonPickPathPoints( threshold = 2.5, pickAboveThresholdQ = TRUE, relativeErrorsQ = FALSE ) %>%
+    QRMonPickPathPoints( threshold = median(lsAbsoluteErrors) * 1.02, pickAboveThresholdQ = TRUE, relativeErrorsQ = FALSE ) %>%
     QRMonTakeValue
 
   dfPath3 <-
     qrObj1 %>%
-    QRMonPickPathPoints( threshold = 2.5, pickAboveThresholdQ = FALSE, relativeErrorsQ = TRUE ) %>%
+    QRMonPickPathPoints( threshold = median(lsRelativeErrors) * 0.98, pickAboveThresholdQ = FALSE, relativeErrorsQ = TRUE ) %>%
     QRMonTakeValue
 
   dfPath4 <-
     qrObj1 %>%
-    QRMonPickPathPoints( threshold = 2.5, pickAboveThresholdQ = TRUE, relativeErrorsQ = TRUE ) %>%
+    QRMonPickPathPoints( threshold = median(lsRelativeErrors) * 1.02, pickAboveThresholdQ = TRUE, relativeErrorsQ = TRUE ) %>%
     QRMonTakeValue
 
 
@@ -44,15 +50,24 @@ test_that("Picking path points", {
 
   expect_s3_class( dfPath4[[1]], "data.frame")
 
-  expect_true( nrow(dfPath1[[1]]) >= nrow(dfTemperatureData) - nrow(dfPath2[[1]]) )
+  expect_true( nrow(dfPath1[[1]]) + nrow(dfPath2[[1]]) <= nrow(dfTemperatureData) )
 
-  expect_true( nrow(dfPath1[[1]]) != nrow(dfPath3[[1]]) )
+  expect_equal(
+    length( intersect( dfPath1[[1]], dfPath2[[1]]) ),
+    length(
+      intersect(
+        lsAbsoluteErrors[lsAbsoluteErrors <= median(lsAbsoluteErrors) * 0.98],
+        lsAbsoluteErrors[lsAbsoluteErrors >= median(lsAbsoluteErrors) * 1.02]))
+  )
 
-  expect_true( nrow(dfPath2[[1]]) != nrow(dfPath3[[1]]) )
+  expect_true( nrow(dfPath3[[1]]) + nrow(dfPath4[[1]]) <= nrow(dfTemperatureData) )
 
-  expect_true( nrow(dfPath3[[1]]) >= nrow(dfTemperatureData) - nrow(dfPath4[[1]]) )
-
-  expect_true( nrow(dfPath3[[1]]) != nrow(dfPath4[[1]]) )
-
+  expect_equal(
+    length( intersect( dfPath3[[1]], dfPath4[[1]]) ),
+    length(
+      intersect(
+        lsRelativeErrors[lsRelativeErrors <= median(lsRelativeErrors) * 0.98],
+        lsRelativeErrors[lsRelativeErrors >= median(lsRelativeErrors) * 1.02]))
+  )
 })
 
