@@ -4,6 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     theme: spacelab
+    source_code: embed
 runtime: shiny
 ---
 
@@ -26,7 +27,7 @@ checkboxInput( inputId = "dateAxisQ", label = "Date axis:", value = FALSE )
 
 hr()
 
-textInput( inputId = "probs", label = "Probabilities:", value = "0.25, 0.5, 0.75")
+textInput( inputId = "probs", label = "Probabilities:", value = "0.1, 0.5, 0.9")
 
 sliderInput( inputId = "df", label = "Degrees of freedom:", min = 1, max = 120, step = 1, value = 12 )
 
@@ -47,8 +48,16 @@ Data and fit
 =====================================
 
 ```{r}
+
+lsGroupColors <- c( "Data" = "gray60", 
+                    "VarianceDiff" = "gray60", 
+                    "Outliers" = "red", 
+                    "VarianceOutliers" = "red", 
+                    "Anomalies" = "red" )
+
 dataset <- reactive({
-  list( "DistributionData" = dfDistributionData, "FinancialData" = dfFinancialData, "TemperatureData" = dfTemperatureData )[[input$dataSpec]]
+  res <- list( "DistributionData" = dfDistributionData, "FinancialData" = dfFinancialData, "TemperatureData" = dfTemperatureData )[[input$dataSpec]]
+  setNames( res,  c("Regressor", "Value") )
 })
 
 outlierIdentifierParameters <- reactive({
@@ -74,8 +83,8 @@ lsProbs <- reactive({
   
 qrObj <- reactive({
 
-  QRMonUnit( setNames( dataset(), c("Regressor", "Value") ) ) %>%
-    QRMonQuantileRegression( df = input$df, probabilities = lsProbs() )
+  QRMonUnit( dataset() ) %>%
+  QRMonQuantileRegression( df = input$df, probabilities = lsProbs() )
 })
 ```
 
@@ -89,7 +98,7 @@ renderPrint({
 ```
 
 
-### Plot data and regression quantiles
+### Data and regression quantiles
 
 ```{r}
 plotQR <- reactive({
@@ -101,7 +110,7 @@ renderPlot( expr = {
 })
 ```
 
-### Plot errors
+### Errors
 
 ```{r}
 renderPlot( expr = {
@@ -139,14 +148,19 @@ dfPointOutliers <- reactive({
 
 renderPlot( expr = {
   
-  QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
-    QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
-    QRMonTakeValue +
-    geom_point( data = dfPointOutliers(), 
-                aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                     y = Value ), 
-                color = "red" ) 
-
+  if( nrow(dfPointOutliers()) == 0 ) {
+    dfPlotData <- cbind( Type = "Data", dataset() )
+  } else {
+    dfPlotData <-  rbind( cbind( Type = "Data", dataset() ), 
+                          cbind( Type = "Outliers", dfPointOutliers() ) )
+  }
+  
+  ggplot( dfPlotData ) + 
+    geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                     y = Value, 
+                     color = Type ) ) +
+    scale_colour_manual( values = lsGroupColors )
+                
 })
 ```
 
@@ -160,16 +174,19 @@ dfPointOutliersByFunc <- reactive({
 })
 
 renderPlot( expr = {
+   
+  if( nrow(dfPointOutliersByFunc()) == 0 ) {
+    dfPlotData <- cbind( Type = "Data", dataset() )
+  } else {
+    dfPlotData <-  rbind( cbind( Type = "Data", dataset() ), 
+                          cbind( Type = "Outliers", dfPointOutliersByFunc() ) )
+  }
   
-  print(
-    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
-      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
-      QRMonTakeValue +
-      geom_point( data = dfPointOutliersByFunc(), 
-                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                       y = Value ), 
-                  color = "red" ) 
-  )
+  ggplot( dfPlotData ) + 
+    geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                     y = Value, 
+                     color = Type ) ) +
+    scale_colour_manual( values = lsGroupColors )
   
 })
 ```
@@ -200,26 +217,29 @@ renderPlot( expr = {
   
   lsRes <- qrObj() %>% QRMonPredict( ) %>% QRMonTakeValue
   dfRes <- dplyr::bind_rows( lsRes, .id = "Prob")
-  dfDiffs <- data.frame( Regressor = lsRes[[2]]["Regressor"], Diff = abs(lsRes[[2]]["Value"] - lsRes[[1]]["Value"] ) )
+  
+  maxPPos <- which.max( as.numeric(names(lsRes)) )
+  minPPos <- which.min( as.numeric(names(lsRes)) )
+
+  dfDiffs <- data.frame( Regressor = lsRes[[maxPPos]]["Regressor"], Value = abs(lsRes[[maxPPos]]["Value"] - lsRes[[minPPos]]["Value"] ) )
 
   lsOutlierPos <- varianceOutlierIdentifier()( dfDiffs$Value )
   
-  if( length(lsOutlierPos) == 0 || sum(lsOutlierPos) == 0 ) { 
-    ggplot( cbind( Type = "VarianceDiff", dfDiffs) ) +
-      geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                       y = Value,  
-                       color = Type)
-      ) +
-      xlab("Regressor")
+  if(length(lsOutlierPos) == 0 || sum(lsOutlierPos) == 0 ) {
+    dfPlotData <- cbind( Type = "Data", dfDiffs )
   } else {
-    ggplot( rbind( cbind( Type = "VarianceDiff", dfDiffs), 
-                   cbind( Type = "Outliers", dfDiffs[lsOutlierPos, ,drop=F]) ) ) + 
-      geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                       y = Value,  
-                       color = Type)
-      ) +
-      xlab("Regressor")
+    dfPlotData <-  rbind( cbind( Type = "VarianceDiff", dfDiffs ), 
+                          cbind( Type = "Outliers", dfDiffs[lsOutlierPos, ,drop=F] ) )
   }
+  
+  ggplot( dfPlotData ) + 
+    geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                     y = Value,  
+                     color = Type)
+    ) +
+    scale_colour_manual( values = lsGroupColors ) +
+    xlab("Regressor")
+    
 })
 ```
 
@@ -234,15 +254,20 @@ dfVarOutliers <- reactive({
 
 renderPlot( expr = {
   
-  print(
-    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
-      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
-      QRMonTakeValue +
-      geom_point( data = dfVarOutliers(), 
-                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                       y = Value ), 
-                  color = "red" ) 
-  )
+  if( nrow(dfVarOutliers()) == 0 ) {
+    dfPlotData <- cbind( Type = "Data", dataset() )
+  } else {
+    dfPlotData <-  rbind( cbind( Type = "Data", dataset() ), 
+                          cbind( Type = "VarianceOutliers", dfVarOutliers() ) )
+  }
+  
+  ggplot( dfPlotData ) + 
+    geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                     y = Value, 
+                     color = Type ) ) +
+    scale_colour_manual( values = lsGroupColors ) +
+    xlab("Regressor")
+  
 })
 ```
 
