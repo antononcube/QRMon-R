@@ -1,8 +1,9 @@
 ---
-title: "QRMon outliers workflow"
+title: "QRMon anomalies detection"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
+    theme: spacelab
 runtime: shiny
 ---
 
@@ -19,7 +20,7 @@ Sidebar {.sidebar}
 =====================================
 
 ```{r}
-selectInput( inputId = "dataSpec", label = "Data:", choices = c( "DistributionData", "FinancialData", "TemperatureData" ), selected = "TemperatureData" )
+selectInput( inputId = "dataSpec", label = "Data:", choices = c( "DistributionData", "FinancialData", "TemperatureData" ), selected = "DistributionData" )
 
 checkboxInput( inputId = "dateAxisQ", label = "Date axis:", value = FALSE )
 
@@ -66,22 +67,27 @@ varianceOutlierIdentifier <- reactive({
   function(x) OutlierIdentifier(data = x, identifier = outlierIdentifierParameters()) 
 })
 
-qrObj <- reactive({
-  lsProbs <- strsplit( input$probs, ",|\\s")[[1]]
-  lsProbs <- as.numeric( lsProbs[nchar(lsProbs) > 0 ] )
+lsProbs <- reactive({
+  res <- strsplit( input$probs, ",|\\s")[[1]]
+  as.numeric( res[nchar(res) > 0 ] )
+})
   
+qrObj <- reactive({
+
   QRMonUnit( setNames( dataset(), c("Regressor", "Value") ) ) %>%
-    QRMonQuantileRegression( df = input$df, probabilities = lsProbs)
+    QRMonQuantileRegression( df = input$df, probabilities = lsProbs() )
 })
 ```
 
 ### Summary
 
 ```{r}
-renderPrint(
+renderPrint({
+  cat( paste0("Number of points: ", nrow(dataset()), "\n"));
   summary(qrObj() %>% QRMonTakeData)
-)
+})
 ```
+
 
 ### Plot data and regression quantiles
 
@@ -103,10 +109,26 @@ renderPlot( expr = {
 })
 ```
 
-Anomalies by residuals
+Point anomalies
 =====================================
 
-### Using threshold
+### Outliers by regression quantiles
+
+```{r}
+renderPlot( expr = {
+  
+  p <- 
+    qrObj() %>% 
+    QRMonOutliers %>% 
+    QRMonOutliersPlot( echoQ = FALSE, plotRegressionCurvesQ = TRUE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01") %>% 
+    QRMonTakeValue
+  
+  print(p)
+  
+})
+```
+
+### Anomalies by residuals using threshold
 
 ```{r}
 dfPointOutliers <- reactive({
@@ -117,19 +139,18 @@ dfPointOutliers <- reactive({
 
 renderPlot( expr = {
   
-  print(
-    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
-      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
-      QRMonTakeValue +
-      geom_point( data = dfPointOutliers(), 
-                  aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
-                       y = Value ), 
-                  color = "red" ) 
-  )
+  QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
+    QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+    QRMonTakeValue +
+    geom_point( data = dfPointOutliers(), 
+                aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
+                     y = Value ), 
+                color = "red" ) 
+
 })
 ```
 
-### Using outlier identifier
+### Anomalies by residuals using outlier identifier
 
 ```{r}
 dfPointOutliersByFunc <- reactive({
@@ -149,12 +170,28 @@ renderPlot( expr = {
                        y = Value ), 
                   color = "red" ) 
   )
+  
 })
 ```
 
 
 Variance anomalies
 =====================================
+
+### Regression quantiles for variance evaluation
+
+```{r}
+renderPlot( expr = {
+  
+  print(
+    QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
+      QRMonQuantileRegression( df = input$df, probabilities = c( min(lsProbs()), max(lsProbs()) ) ) %>% 
+      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+      QRMonTakeValue 
+  )
+  
+})
+```
 
 ### Conditional variance
 
@@ -208,3 +245,78 @@ renderPlot( expr = {
   )
 })
 ```
+
+References
+====================================
+
+#### In brief
+
+The quantile regression workflows are made with the R package [`QRMon-R`](https://github.com/antononcube/QRMon-R),
+which is based on [`quantreg`](https://cran.r-project.org/web/packages/quantreg/index.html).
+
+
+#### Articles, books
+
+[RK1] Roger Koenker, 
+[Quantile Regression](https://books.google.com/books/about/Quantile_Regression.html?id=hdkt7V4NXsgC), 
+Cambridge University Press, 2005.
+
+[RK2] Roger Koenker,
+["Quantile Regression in R: a vignette"](https://cran.r-project.org/web/packages/quantreg/vignettes/rq.pdf),
+(2006),
+[CRAN](https://cran.r-project.org/).
+
+[AA1] Anton Antonov,
+["A monad for Quantile Regression workflows"](https://github.com/antononcube/MathematicaForPrediction/blob/master/MarkdownDocuments/A-monad-for-Quantile-Regression-workflows.md),
+(2018),
+[MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction).
+
+#### Packages
+
+[RKp1] Roger Koenker,
+[`quantreg`](https://cran.r-project.org/web/packages/quantreg/index.html),
+[CRAN](https://cran.r-project.org/).
+
+[AAp1] Anton Antonov,
+[Quantile Regression Mathematica package](https://github.com/antononcube/MathematicaForPrediction/blob/master/QuantileRegression.m),
+(2014),
+[MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction).
+
+[AAp2] Anton Antonov,
+[Monadic Quantile Regression Mathematica package](https://github.com/antononcube/MathematicaForPrediction/blob/master/MonadicProgramming/MonadicQuantileRegression.m),
+(2018),
+[MathematicaForPrediction at GitHub](https://github.com/antononcube/MathematicaForPrediction).
+
+[AAp3] Anton Antonov,
+[`QuantileRegression`](https://resources.wolframcloud.com/FunctionRepository/resources/QuantileRegression),
+(2019),
+[Wolfram Function Repository](https://resources.wolframcloud.com/FunctionRepository/resources/QuantileRegression).
+
+#### Repositories
+
+[AAr1] Anton Antonov,
+[QRMon-R](https://github.com/antononcube/QRMon-R),
+(2019),
+[GitHub/antononcube](https://github.com/antononcube).
+
+[AAr2] Anton Antonov,
+[DSL::English::QuantileRegressionWorkflows in Raku](https://github.com/antononcube/Raku-DSL-English-QuantileRegressionWorkflows),
+(2020),
+[GitHub/antononcube](https://github.com/antononcube).
+
+#### Videos
+
+[AAv1] Anton Antonov,
+["Anomalies, Breaks, and Outliers Detection in Time Series"](https://www.youtube.com/watch?v=h_fLb6YU87c),
+Wolfram Research Technology 2019 talk,
+[Wolfram Research Inc. channel at YouTube](https://www.youtube.com/channel/UCJekgf6k62CQHdENWf2NgAQ).
+
+[AAv2] Anton Antonov,
+["Boston useR! QuantileRegression Workflows 2019-04-18"](https://www.youtube.com/watch?v=a_Dk25xarvE),
+(2019),
+[Anton Antonov at YouTube](https://www.youtube.com/channel/UC5qMPIsJeztfARXWdIw3Xzw).
+
+[AAv3] Anton Antonov,
+["useR! 2020: How to simplify Machine Learning workflows specifications"](https://www.youtube.com/watch?v=b9Uu7gRF5KY),
+(2020),
+[R Consortium at YouTube](https://www.youtube.com/channel/UC_R5smHVXRYGhZYDJsnXTwg).
