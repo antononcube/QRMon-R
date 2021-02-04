@@ -39,7 +39,7 @@ numericInput( inputId = "outlierThreshold", label = "Outliers threshold:", min =
 
 selectInput( inputId = "outlierIdentifier", 
              label = "Outlier identifier:", 
-             choices = c( "Hampel", "SPLUSQuartile", "QuartileIdentifier"), 
+             choices = c( "Hampel", "SPLUSQuartile", "Quartile"), 
              selected = "Hampel" )
 
 ```
@@ -57,14 +57,14 @@ lsGroupColors <- c( "Data" = "gray60",
 
 dataset <- reactive({
   res <- list( "DistributionData" = dfDistributionData, "FinancialData" = dfFinancialData, "TemperatureData" = dfTemperatureData )[[input$dataSpec]]
-  setNames( res,  c("Regressor", "Value") )
+  QRMonUnit( setNames( res,  c("Regressor", "Value") ) ) %>% QRMonTakeData
 })
 
 outlierIdentifierParameters <- reactive({
   list( 
     "Hampel" = HampelIdentifierParameters, 
     "SPLUSQuartile" = SPLUSQuartileIdentifierParameters, 
-    "QuartileIdentifier" = QuartileIdentifierParameters
+    "Quartile" = QuartileIdentifierParameters
   )[[input$outlierIdentifier]]
 })  
 
@@ -114,7 +114,7 @@ renderPlot( expr = {
 
 ```{r}
 renderPlot( expr = {
-  print(qrObj() %>% QRMonErrorsPlot(relativeErrorsQ = input$relativeErrorsQ, datePlotQ = input$dateAxisQ ))
+  print(qrObj() %>% QRMonErrorsPlot(relativeErrorsQ = input$relativeErrorsQ, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ))
 })
 ```
 
@@ -148,18 +148,19 @@ dfPointOutliers <- reactive({
 
 renderPlot( expr = {
   
-  if( nrow(dfPointOutliers()) == 0 ) {
+  if( is.null(dfPointOutliers()) || nrow(dfPointOutliers()) == 0 ) {
     dfPlotData <- cbind( Type = "Data", dataset() )
   } else {
-    dfPlotData <-  rbind( cbind( Type = "Data", dataset() ), 
-                          cbind( Type = "Outliers", dfPointOutliers() ) )
+    dfPlotData <- rbind( cbind( Type = "Data", dataset() ), 
+                         cbind( Type = "Outliers", dfPointOutliers() ) )
   }
   
   ggplot( dfPlotData ) + 
     geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
                      y = Value, 
                      color = Type ) ) +
-    scale_colour_manual( values = lsGroupColors )
+    scale_colour_manual( values = lsGroupColors ) +
+    xlab("Regressor")
                 
 })
 ```
@@ -175,18 +176,19 @@ dfPointOutliersByFunc <- reactive({
 
 renderPlot( expr = {
    
-  if( nrow(dfPointOutliersByFunc()) == 0 ) {
+  if( is.null(dfPointOutliers()) || nrow(dfPointOutliersByFunc()) == 0 ) {
     dfPlotData <- cbind( Type = "Data", dataset() )
   } else {
-    dfPlotData <-  rbind( cbind( Type = "Data", dataset() ), 
-                          cbind( Type = "Outliers", dfPointOutliersByFunc() ) )
+    dfPlotData <- rbind( cbind( Type = "Data", dataset() ), 
+                         cbind( Type = "Outliers", dfPointOutliersByFunc() ) )
   }
   
   ggplot( dfPlotData ) + 
     geom_point( aes( x = if(input$dateAxisQ) { as.POSIXct(Regressor, origin = "1900-01-01") } else { Regressor }, 
                      y = Value, 
                      color = Type ) ) +
-    scale_colour_manual( values = lsGroupColors )
+    scale_colour_manual( values = lsGroupColors ) +
+    xlab("Regressor")
   
 })
 ```
