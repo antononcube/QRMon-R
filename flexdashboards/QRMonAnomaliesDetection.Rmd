@@ -281,6 +281,12 @@ References
 The quantile regression workflows are made with the R package [`QRMon-R`](https://github.com/antononcube/QRMon-R),
 which is based on [`quantreg`](https://cran.r-project.org/web/packages/quantreg/index.html).
 
+#### Dashboards
+
+[AAd1] Anton Antonov,
+[GNNMon time series anomalies detection](https://antononcube.shinyapps.io/GNNMonTimeSeriesAnomaliesDetection/),
+(2020),
+[shinyapps.io by RStudio](https://www.shinyapps.io).
 
 #### Articles, books
 
