@@ -8,7 +8,8 @@ QRMonFindAnomaliesByResiduals(
   qrObj,
   threshold = NULL,
   outlierIdentifier = NULL,
-  relativeErrorsQ = FALSE
+  relativeErrorsQ = FALSE,
+  probability = NULL
 )
 }
 \arguments{
@@ -23,6 +24,10 @@ If NULL an internal implementation of the quartile outlier
 identifier is used. (For the top outliers.)}
 
 \item{relativeErrorsQ}{Should relative errors be used or not?}
+
+\item{probability}{Which regression quantile to use?
+If NULL the regression quantile is automatically selected,
+the one that is closest to 0.5.}
 }
 \value{
 A QRMon object.

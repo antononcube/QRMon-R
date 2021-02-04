@@ -1512,21 +1512,26 @@ QuartileTopOutlierIdentifier <- function( vec ) {
 #' If NULL an internal implementation of the quartile outlier
 #' identifier is used. (For the top outliers.)
 #' @param relativeErrorsQ Should relative errors be used or not?
+#' @param probability Which regression quantile to use?
+#' If NULL the regression quantile is automatically selected,
+#' the one that is closest to 0.5.
 #' @details The residuals outliers are picked with the formulas:
 #' \code{c(xL,x0,xU) <- quantile( abs(residuals), c(1/4,1/2,3/4) )},
 #' \code{abs(residuals) > x0+(xU-xL)}.
 #' (Errors and residuals are used as synonyms here.)
 #' @return A QRMon object.
 #' @export
-QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdentifier = NULL, relativeErrorsQ = FALSE ) {
+QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdentifier = NULL, relativeErrorsQ = FALSE, probability = NULL ) {
 
   if( QRMonFailureQ(qrObj) ) { return(QRMonFailureSymbol) }
 
+  ## Threshold
   if( !(  is.null(threshold) || is.numeric(threshold) && length(threshold) == 1 ) ) {
     warning( "The argument threshold is expected to be a number or NULL.", call. = TRUE )
     return(QRMonFailureSymbol)
   }
 
+  ## Outlier identifier
   if( !( is.null(outlierIdentifier) || ( "function" %in% class(outlierIdentifier) ) ) ) {
     warning( "The argument outlierIdentfier is expected to be a function or NULL.", call. = TRUE )
     return(QRMonFailureSymbol)
@@ -1536,6 +1541,34 @@ QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdent
     outlierIdentifier <- QuartileTopOutlierIdentifier
   }
 
+  ## Find regression quantile
+  if( !( is.null(probability) || ( is.numeric(probability) || is.character(probability) ) && length(probability) ) ) {
+    warning( "The argument probability is expected to be a number, a string, or NULL.", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  rqs <- qrObj %>% QRMonTakeRegressionObjects()
+
+  if( QRMonFailureQ(rqs) || length(rqs) == 0 ) {
+    warning( "Cannot find regression quantile(s).", call. = TRUE )
+    return(QRMonFailureSymbol)
+  }
+
+  rqs <- names(rqs)
+  autoProb <- rqs[[ which.min( abs(0.5 - as.numeric(rqs)) ) ]]
+
+  if( is.null(probability) ) {
+    probability <- autoProb
+  } else {
+    probability <- as.character(probability)
+  }
+
+  if( !( probability %in% rqs ) ) {
+    warning( paste0( "Cannot find a regression quantile that corresponds to the specified probability. Using automatic probability instead (", autoProb, ")."), call. = TRUE )
+    probability <- autoProb
+  }
+
+  ## Main algorithm
   if( is.numeric(threshold) ) {
 
     outliers <-
@@ -1545,9 +1578,9 @@ QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdent
 
     if( QRMonFailureQ(outliers) ) { return(QRMonFailureSymbol) }
 
-    outliers <- outliers[[1]]
+    outliers <- outliers[[probability]]
 
-  } else if ( "function" %in% class(outlierIdentifier)  ) {
+  } else if ( "function" %in% class(outlierIdentifier) ) {
 
     errs <-
       qrObj %>%
@@ -1556,13 +1589,13 @@ QRMonFindAnomaliesByResiduals <- function( qrObj, threshold = NULL, outlierIdent
 
     if( QRMonFailureQ(errs) ) { return(QRMonFailureSymbol) }
 
-    outPos <- outlierIdentifier( abs(errs[[1]]$Error) )
+    outPos <- outlierIdentifier( abs(errs[[probability]]$Error) )
 
     outliers <- (qrObj %>% QRMonTakeData)[ outPos, ]
 
   } else {
 
-    warning( "Either the argument threshold is a number of the outlierIdentifier is a function.", call. = TRUE )
+    warning( "Either the argument threshold is a number of the argument outlierIdentifier is a function.", call. = TRUE )
     return(QRMonFailureSymbol)
 
   }
