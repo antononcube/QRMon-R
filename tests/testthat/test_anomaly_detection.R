@@ -15,6 +15,20 @@ test_that("Anomaly detection by residuals using threshold", {
   expect_s3_class( dfOutliers1, "data.frame")
 
   expect_true( nrow(dfOutliers1) < floor( 0.2 * nrow( dfTemperatureData ) ) )
+
+  expect_warning(
+    dfOutliers2 <-
+      qrObj1 %>%
+      QRMonFindAnomaliesByResiduals( threshold = 5, relativeErrorsQ = FALSE, probability = 0.8 ) %>%
+      QRMonTakeValue,
+    "Cannot find" )
+
+  expect_s3_class( dfOutliers2, "data.frame")
+
+  expect_true( nrow(dfOutliers2) < floor( 0.2 * nrow( dfTemperatureData ) ) )
+
+  expect_equal( dfOutliers1, dfOutliers2 )
+
 })
 
 
@@ -51,7 +65,8 @@ test_that("Anomalies detection by residuals using outlier identifier", {
     qrObj2 %>%
     QRMonFindAnomaliesByResiduals( threshold = NULL,
                                    outlierIdentifier = NULL,
-                                   relativeErrorsQ = FALSE ) %>%
+                                   relativeErrorsQ = FALSE,
+                                   probability = NULL ) %>%
     QRMonTakeValue
 
   expect_s3_class( dfOutliers2, "data.frame")
@@ -63,12 +78,31 @@ test_that("Anomalies detection by residuals using outlier identifier", {
     qrObj2 %>%
     QRMonFindAnomaliesByResiduals( threshold = NULL,
                                    outlierIdentifier = function(x) TopOutlierPosition( x, identifier = SPLUSQuartileIdentifierParameters ),
-                                   relativeErrorsQ = FALSE ) %>%
+                                   relativeErrorsQ = FALSE,
+                                   probability = NULL ) %>%
     QRMonTakeValue
 
   expect_s3_class( dfOutliers3, "data.frame")
 
   expect_true( nrow(dfOutliers3) < floor( 0.2 * nrow( dfTemperatureData ) ) )
+
+
+  expect_warning(
+    dfOutliers4 <-
+      qrObj2 %>%
+      QRMonFindAnomaliesByResiduals( threshold = NULL,
+                                     outlierIdentifier = function(x) TopOutlierPosition( x, identifier = SPLUSQuartileIdentifierParameters ),
+                                     relativeErrorsQ = FALSE,
+                                     probability = 0.4 ) %>%
+      QRMonTakeValue,
+    "Cannot find"
+  )
+
+  expect_s3_class( dfOutliers4, "data.frame")
+
+  expect_true( nrow(dfOutliers4) < floor( 0.2 * nrow( dfTemperatureData ) ) )
+
+  expect_equivalent( dfOutliers4, dfOutliers3 )
 
 })
 

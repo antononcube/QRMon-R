@@ -100,6 +100,16 @@ test_that("Anomalies by residuals finding warnings", {
                     QRMonFindAnomaliesByResiduals( threshold = c(12, 3) ),
                   "The argument threshold is expected to be a number or NULL.")
 
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonQuantileRegression( df = 16, probabilities = c( 0.4, 0.6, 0.8 ) ) %>%
+                    QRMonFindAnomaliesByResiduals( threshold = 1, outlierIdentifier = NULL, relativeErrorsQ = FALSE, probability = 0.5 ),
+                  "Cannot find a regression quantile that corresponds to the specified probability")
+
+  expect_warning( QRMonUnit( setNames( dfTemperatureData, c("Regressor", "Value") ) ) %>%
+                    QRMonQuantileRegression( df = 16, probabilities = c( 0.4, 0.6, 0.8 ) ) %>%
+                    QRMonFindAnomaliesByResiduals( threshold = NULL, outlierIdentifier = NULL, relativeErrorsQ = FALSE, probability = 0.5 ),
+                  "Cannot find a regression quantile that corresponds to the specified probability")
+
 })
 
 
