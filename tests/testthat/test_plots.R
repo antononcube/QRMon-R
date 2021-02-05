@@ -26,6 +26,11 @@ test_that("Plot functions", {
                                         dataLineColor = "blue",
                                         datePlotQ = TRUE) %>% QRMonTakeValue, "ggplot")
 
+  expect_s3_class( qrObj %>% QRMonPlot( echoQ = FALSE,
+                                        dataLineColor = "gray50",
+                                        dataPointsColor = NULL,
+                                        datePlotQ = TRUE) %>% QRMonTakeValue, "ggplot")
+
   expect_s3_class( qrObj %>% QRMonOutliersPlot( echoQ = FALSE,
                                                 datePlotQ = TRUE,
                                                 plotRegressionCurvesQ = TRUE) %>% QRMonTakeValue, "ggplot")
@@ -49,6 +54,13 @@ test_that("Plot functions", {
   expect_s3_class( qrObj3 %>% QRMonOutliersPlot( echoQ = FALSE,
                                                  datePlotQ = FALSE,
                                                  plotRegressionCurvesQ = FALSE) %>% QRMonTakeValue, "ggplot")
+
+  expect_s3_class( qrObj3 %>% QRMonOutliersPlot( echoQ = FALSE,
+                                                 datePlotQ = TRUE,
+                                                 dataLineColor = "gray50",
+                                                 dataPointsColor = "red",
+                                                 plotRegressionCurvesQ = TRUE
+                                                 ) %>% QRMonTakeValue, "ggplot")
 
   expect_s3_class( qrObj %>% QRMonConditionalCDFPlot( echoQ = FALSE,
                                                       regressorValues = c(3690144000, 3690403200, 3690489600),
