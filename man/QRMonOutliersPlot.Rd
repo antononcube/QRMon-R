@@ -7,6 +7,8 @@
 QRMonOutliersPlot(
   qrObj,
   plotRegressionCurvesQ = TRUE,
+  dataLineColor = NULL,
+  dataPointsColor = "gray60",
   datePlotQ = FALSE,
   dateOrigin = "1970-01-01",
   echoQ = TRUE
@@ -16,6 +18,12 @@ QRMonOutliersPlot(
 \item{qrObj}{An QRMon object.}
 
 \item{plotRegressionCurvesQ}{Should the regression curves be plotted or not?}
+
+\item{dataLineColor}{The color of the line connecting the data points.
+If NULL the data line is not plotted.}
+
+\item{dataPointsColor}{The color of the data points.
+If NULL the data points are not plotted.}
 
 \item{datePlotQ}{Should the regressor axis have dates scale?}
 

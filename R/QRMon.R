@@ -815,6 +815,10 @@ QRMonOutliers <- function( qrObj ) {
 #' Outliers plot.
 #' @description Plot the monad object data and found outliers.
 #' @param qrObj An QRMon object.
+#' @param dataLineColor The color of the line connecting the data points.
+#' If NULL the data line is not plotted.
+#' @param dataPointsColor The color of the data points.
+#' If NULL the data points are not plotted.
 #' @param plotRegressionCurvesQ Should the regression curves be plotted or not?
 #' @param datePlotQ Should the regressor axis have dates scale?
 #' @param dateOrigin Same as the argument \code{origin} of \code{as.POSIXct}.
@@ -824,6 +828,7 @@ QRMonOutliers <- function( qrObj ) {
 #' @family Outlier functions
 #' @export
 QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE,
+                               dataLineColor = NULL, dataPointsColor = 'gray60',
                                datePlotQ = FALSE, dateOrigin = "1970-01-01",
                                echoQ = TRUE ) {
 
@@ -849,12 +854,22 @@ QRMonOutliersPlot <- function( qrObj, plotRegressionCurvesQ = TRUE,
   if( plotRegressionCurvesQ ) {
     resPlot <-
       qrObj %>%
-      QRMonPlot( regressionCurvesColor = 'gray60', datePlotQ = datePlotQ, dateOrigin = dateOrigin, echoQ = FALSE ) %>%
+      QRMonPlot( dataLineColor = dataLineColor,
+                 dataPointsColor = dataPointsColor,
+                 regressionCurvesColor = 'gray60',
+                 datePlotQ = datePlotQ,
+                 dateOrigin = dateOrigin,
+                 echoQ = FALSE ) %>%
       QRMonTakeValue()
   } else {
     resPlot <-
       qrObj %>%
-      QRMonPlot( regressionCurvesColor = NULL, datePlotQ = datePlotQ, dateOrigin = dateOrigin, echoQ = FALSE ) %>%
+      QRMonPlot( dataLineColor = dataLineColor,
+                 dataPointsColor = dataPointsColor,
+                 regressionCurvesColor = NULL,
+                 datePlotQ = datePlotQ,
+                 dateOrigin = dateOrigin,
+                 echoQ = FALSE ) %>%
       QRMonTakeValue()
   }
 
