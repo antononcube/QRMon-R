@@ -25,6 +25,8 @@ selectInput( inputId = "dataSpec", label = "Data:", choices = c( "DistributionDa
 
 checkboxInput( inputId = "dateAxisQ", label = "Date axis:", value = FALSE )
 
+checkboxInput( inputId = "joinedPlotQ", label = "Joined plot:", value = FALSE )
+
 hr()
 
 textInput( inputId = "probs", label = "Probabilities:", value = "0.1, 0.5, 0.9")
@@ -102,7 +104,13 @@ renderPrint({
 
 ```{r}
 plotQR <- reactive({
-  qrObj() %>% QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% QRMonTakeValue
+  qrObj() %>% 
+    QRMonPlot( echoQ = FALSE, 
+               datePlotQ = input$dateAxisQ, 
+               dateOrigin = "1900-01-01", 
+               dataPointsColor = if( input$joinedPlotQ ) { NULL } else { "gray60" },
+               dataLineColor = if( input$joinedPlotQ ) { "gray60" } else { NULL } ) %>% 
+    QRMonTakeValue
 })
 
 renderPlot( expr = {
@@ -129,7 +137,13 @@ renderPlot( expr = {
   p <- 
     qrObj() %>% 
     QRMonOutliers %>% 
-    QRMonOutliersPlot( echoQ = FALSE, plotRegressionCurvesQ = TRUE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01") %>% 
+    QRMonOutliersPlot( 
+      echoQ = FALSE, 
+      plotRegressionCurvesQ = TRUE, 
+      datePlotQ = input$dateAxisQ, 
+      dateOrigin = "1900-01-01",
+      dataPointsColor = if( input$joinedPlotQ ) { NULL } else { "gray60" },
+      dataLineColor = if( input$joinedPlotQ ) { "gray60" } else { NULL } ) %>% 
     QRMonTakeValue
   
   print(p)
@@ -205,7 +219,11 @@ renderPlot( expr = {
   print(
     QRMonUnit( qrObj() %>% QRMonTakeData ) %>% 
       QRMonQuantileRegression( df = input$df, probabilities = c( min(lsProbs()), max(lsProbs()) ) ) %>% 
-      QRMonPlot( echoQ = FALSE, datePlotQ = input$dateAxisQ, dateOrigin = "1900-01-01" ) %>% 
+      QRMonPlot( echoQ = FALSE, 
+                 datePlotQ = input$dateAxisQ, 
+                 dateOrigin = "1900-01-01",
+                 dataPointsColor = if( input$joinedPlotQ ) { NULL } else { "gray60" },
+                 dataLineColor = if( input$joinedPlotQ ) { "gray60" } else { NULL } ) %>% 
       QRMonTakeValue 
   )
   
