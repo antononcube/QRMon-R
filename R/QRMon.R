@@ -916,6 +916,8 @@ QRMonErrors <- function( qrObj, relativeErrorsQ = TRUE ) {
                    function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
 
+                     if( is.data.frame(errs) ) { errs <- errs[,1] }
+
                      if( relativeErrorsQ ) {
                        errs <- errs / abs(ifelse( data[["Value"]] == 0, 1, data[["Value"]] ))
                      }
@@ -962,6 +964,8 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE,
                    function(x) {
                      errs <- predict( regObjs[[x]], newdata = data[, "Regressor", drop = F] ) - data[, "Value"]
 
+                     if( is.data.frame(errs) ) { errs <- errs[,1] }
+
                      if( relativeErrorsQ ) {
                        errs <- errs / abs(ifelse( data[["Value"]] == 0, 1, data[["Value"]] ))
                      }
@@ -986,7 +990,7 @@ QRMonErrorsPlot <- function( qrObj, relativeErrorsQ = TRUE,
   qrObj$Value <- resPlot
 
   if( echoQ ) {
-    print(resPlot)
+    base::print(resPlot)
   }
 
   qrObj
