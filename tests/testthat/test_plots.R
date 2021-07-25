@@ -31,6 +31,12 @@ test_that("Plot functions", {
                                         dataPointsColor = NULL,
                                         datePlotQ = TRUE) %>% QRMonTakeValue, "ggplot")
 
+  expect_s3_class( qrObj %>% QRMonErrorsPlot( echoQ = FALSE,
+                                              datePlotQ = TRUE) %>% QRMonTakeValue, "ggplot")
+
+  expect_s3_class( qrObj %>% QRMonErrorsPlot( echoQ = FALSE,
+                                              datePlotQ = FALSE) %>% QRMonTakeValue, "ggplot")
+
   expect_s3_class( qrObj %>% QRMonOutliersPlot( echoQ = FALSE,
                                                 datePlotQ = TRUE,
                                                 plotRegressionCurvesQ = TRUE) %>% QRMonTakeValue, "ggplot")
